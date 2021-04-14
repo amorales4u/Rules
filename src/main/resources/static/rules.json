@@ -1,0 +1,40 @@
+{
+    "name": "Reglas de solicitudes",
+    "rulesGroups": [{
+        "name": "Inicio",
+        "defaultFact": "GotoPorAtender",
+        "rules": null
+    }, {
+        "name": "Por resolver",
+        "defaultFact": null,
+        "rules": [{
+            "name": "Regla para folder para aceptar",
+            "description": null,
+            "fact": null,
+            "condition": ["context.accept == 1"],
+            "rules": [{
+                "name": "Si es aceptada ademas y tiene definido un email",
+                "description": null,
+                "fact": "GoToAceptarAndEmail",
+                "condition": ["context.email != null"],
+                "rules": null
+            }, {
+                "name": "Si es aceptada ademas y NO tiene email",
+                "description": null,
+                "fact": "GoToAceptar",
+                "condition": ["context.email == null"],
+                "rules": null
+            }]
+        }, {
+            "name": "Regla para folder para cancelar",
+            "description": null,
+            "fact": "GotoCancelar",
+            "condition": ["context.accept == 2"],
+            "rules": null
+        }]
+    }, {
+        "name": "Por cancelar",
+        "defaultFact": "GotoCancelar",
+        "rules": null
+    }]
+}
