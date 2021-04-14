@@ -1,6 +1,8 @@
 package dev.c20.rules.engine.services;
 
 import dev.c20.rules.engine.demo.WorkFlowBusiness;
+import dev.c20.rules.engine.entities.Fact;
+import dev.c20.rules.engine.entities.IFact;
 import dev.c20.rules.engine.entities.Rule;
 import dev.c20.rules.engine.entities.Group;
 import dev.c20.rules.engine.tools.Eval;
@@ -23,13 +25,31 @@ public class RuleService {
         return fact;
 
     }
+    public List<Object> evalAndFireBusinessRule( RuleRequest request) {
+        List<RuleResponse> facts = evalBusinessRule( request);
+        List<Object> responses = new ArrayList<>();
+        for( RuleResponse factResponse : facts ) {
+            Fact factToFire = FactsRegistered.getInstance().get(factResponse.getName());
+            if( factToFire == null ) {
+                factToFire = FactsRegistered.getInstance().get(factResponse.getFactNotFound());
+                if( factToFire == null ) {
+                    throw new RuntimeException("Fact named " + factResponse.getName() + " not exists");
+                }
+            }
 
-    public List<String> evalBusinessRule( RuleRequest request) {
+            responses.add( ((IFact)factToFire.instance()).execute(factToFire,request.getContext()) );
+
+        }
+
+        return responses;
+    }
+
+    public List<RuleResponse> evalBusinessRule( RuleRequest request) {
 
         Group rulesGroup = WorkFlowBusiness.getInstance().getBussinessRules().find(request.getRuleGroupName());
 
         if( rulesGroup == null ) {
-            List<String> result = new ArrayList<>();
+            List<RuleResponse> result = new ArrayList<>();
             return result;
         }
 
@@ -37,8 +57,8 @@ public class RuleService {
 
     }
 
-    public List<String> evalBusinessRule(Group rulesGroup, Map<String,Object> context) {
-        List<String> facts = new ArrayList<>();
+    public List<RuleResponse> evalBusinessRule(Group rulesGroup, Map<String,Object> context) {
+        List<RuleResponse> facts = new ArrayList<>();
         String fact = null;
         for( Rule rule : rulesGroup.getRules() ) {
             fact = evalRule( facts, rule, context, 0);
@@ -49,11 +69,15 @@ public class RuleService {
         log.info("Return defaultFact from rules group " + rulesGroup.getFactNotFound());
 
         if( rulesGroup.getFactNotFound() != null ) {
-            facts.add(rulesGroup.getName() + " -- " + rulesGroup.getFactNotFound());
+            RuleResponse response = new RuleResponse();
+            response.setName( rulesGroup.getName() );
+            response.setDescription( rulesGroup.getDescription() );
+            response.setFactNotFound( rulesGroup.getFactNotFound() );
+            facts.add(response);
         }
         return facts;
     }
-    public String evalRule( List<String> facts, Rule rule, Map<String,Object> context, int level) {
+    public String evalRule( List<RuleResponse> facts, Rule rule, Map<String,Object> context, int level) {
         EvalResult evalResult = Eval.getInstance().run(rule.getExpression(), context, rule.getName() );
         boolean result = (boolean)evalResult.getResult();
         log.info("Eval expression rule (in level " + level + " ):" + rule.getName() + " => " + result);
@@ -72,7 +96,7 @@ public class RuleService {
 
         if( result ) {
             if( rule.getFact() != null) {
-                facts.add(rule.getName() + " -- " + rule.getFact());
+                facts.add( RuleResponse.fromRule(rule) );
             }
             return rule.getFact();
         }
@@ -81,10 +105,5 @@ public class RuleService {
 
     }
 
-    private void addFact( List<String> facts, String fact) {
-        if( fact != null ) {
-            facts.add(fact);
-        }
-    }
 
 }

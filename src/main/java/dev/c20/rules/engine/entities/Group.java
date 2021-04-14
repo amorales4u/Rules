@@ -14,6 +14,7 @@ import java.util.List;
 public class Group implements Serializable {
 
     String name;
+    String description;
     String factNotFound = null;
     List<Rule> rules = null;
 

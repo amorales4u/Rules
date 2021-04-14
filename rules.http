@@ -1,14 +1,14 @@
-GET http://localhost:8090/rules/version
+GET http://localhost:8095/rules/version
 
 ###
 
-POST http://localhost:8090/rules/test
+POST http://localhost:8095/rules/evaluate
 Content-Type: application/json
 
 {
     "ruleGroupName": "Por resolver",
     "context": {
-        "accept": 1,
+        "accept": 12,
         "email": "email"
 
     }

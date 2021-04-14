@@ -1,6 +1,7 @@
 package dev.c20.rules.engine;
 
 import dev.c20.rules.engine.services.RuleRequest;
+import dev.c20.rules.engine.services.RuleResponse;
 import dev.c20.rules.engine.services.RuleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -18,8 +19,15 @@ public class RuleRestController {
         return "2021-04-13 18:50";
     }
 
-    @PostMapping("/test")
-    public List<String> evalBusinessRule(@RequestBody RuleRequest request) {
+    @PostMapping("/evaluate")
+    public List<RuleResponse> evalBusinessRule(@RequestBody RuleRequest request) {
         return ruleService.evalBusinessRule(request);
     }
+
+    @PostMapping("/evaluate-and-fire")
+    public List<Object> evalAndFireBusinessRule(@RequestBody RuleRequest request) {
+        return ruleService.evalAndFireBusinessRule(request);
+    }
+
+
 }

@@ -39,7 +39,7 @@ public class WorkFlowBusiness {
                 .addLine("context.accept == 1")
                 .startChildRule()
                 .name("Si es aceptada ademas y tiene definido un email")
-                .fact("GoToAceptarAndEmail")
+                .fact("SendEmail")
                 .exclusive(false)
                 .addLine("context.email != null")
                 .finishChildRule()
@@ -63,7 +63,7 @@ public class WorkFlowBusiness {
                 .startRule()
                 .name("Regla para folder para cancelar si o si")
                 .exclusive(false)
-                .fact("GotoCancelarSiOSi")
+                .fact("GotoAceptar")
                 .addLine("context.accept == 1")
                 .finishRule()
 
