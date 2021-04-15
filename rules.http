@@ -8,7 +8,7 @@ Content-Type: application/json
 {
     "ruleGroupName": "Por resolver",
     "context": {
-        "accept": 12,
+        "accept": 1,
         "email": "email"
 
     }

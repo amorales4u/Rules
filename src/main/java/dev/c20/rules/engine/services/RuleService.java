@@ -42,7 +42,7 @@ public class RuleService {
             return businessEvalRuleResponse;
         }
 
-        List<Object> responses = new ArrayList<>();
+        List<EvaluateFactResponse> responses = new ArrayList<>();
 
         for( Rule rule : businessRuleResponse.getRulesComplied() ) {
             String factName = rule.getFact();

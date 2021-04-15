@@ -13,7 +13,7 @@ public class BusinessEvalRuleResponse {
     private boolean complied;
     private String factNotFoundMessage;
     private String ruleGroupEvaluated;
-    private List<Object> rulesEvaluated;
+    private List<EvaluateFactResponse> rulesEvaluated;
 
     public boolean isValid() {
         return ruleGroupFound && complied;

@@ -1,7 +1,9 @@
 package dev.c20.rules.engine.entities;
 
+import dev.c20.rules.engine.services.EvaluateFactResponse;
+
 public interface IFact {
 
 
-    public Object execute(Rule rile,Fact fact, Object context );
+    public EvaluateFactResponse execute(Rule rile, Fact fact, Object context );
 }
