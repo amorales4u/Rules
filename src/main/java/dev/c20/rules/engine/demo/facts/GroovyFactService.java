@@ -10,7 +10,8 @@ import org.springframework.stereotype.Service;
 public class GroovyFactService implements IFact   {
 
     public Object execute(RuleResponse ruleResponse, Fact fact, Object context ) {
-        return null;
+
+        return "Here execute fact " + fact.name();
     }
     public Object execute(GroupResponse groupResponse, Fact fact, Object context ) {
         return null;

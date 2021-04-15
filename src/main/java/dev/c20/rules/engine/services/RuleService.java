@@ -7,10 +7,13 @@ import dev.c20.rules.engine.entities.Rule;
 import dev.c20.rules.engine.entities.Group;
 import dev.c20.rules.engine.tools.Eval;
 import dev.c20.rules.engine.tools.EvalResult;
+import groovy.text.SimpleTemplateEngine;
+import groovy.text.Template;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -26,24 +29,14 @@ public class RuleService {
 
     }
     public List<Object> evalAndFireBusinessRule( RuleRequest request) {
-        List<Object> facts = evalBusinessRule( request);
+        BusinessRuleResponse businessRuleResponse = evalBusinessRule( request);
         List<Object> responses = new ArrayList<>();
-        for( Object factObject : facts ) {
-            RuleResponse ruleResponse = null;
-            GroupResponse groupResponse = null;
-            String factName = null;
-            if(factObject instanceof GroupResponse){
-                groupResponse = (GroupResponse)factObject;
-                factName = groupResponse.factNotFound;
-            } else {
-                ruleResponse = (RuleResponse) factObject;
-                factName = ruleResponse.getName();
-            }
-
+        for( Rule rule : businessRuleResponse.getRulesComplied() ) {
+            String factName = rule.getFact();
             Fact factToFire = FactsRegistered.getInstance().get(factName);
 
             if( factToFire == null ) {
-                throw new RuntimeException("Fact named " + ruleResponse.getName() + " not exists");
+                throw new RuntimeException("Fact named [" + factName + " => " + rule.getName() + "] not exists");
             }
 
             if( ruleResponse != null ) {
@@ -57,20 +50,28 @@ public class RuleService {
         return responses;
     }
 
-    public List<Object> evalBusinessRule(RuleRequest request) {
-
+    public BusinessRuleResponse evalBusinessRule(RuleRequest request) {
+        BusinessRuleResponse businessRuleResponse = new BusinessRuleResponse();
         Group rulesGroup = WorkFlowBusiness.getInstance().getBussinessRules().find(request.getRuleGroupName());
 
         if( rulesGroup == null ) {
-            List<Object> result = new ArrayList<>();
-            return result;
+            businessRuleResponse.setRuleGroupNotFound(true);
+            businessRuleResponse.setComplied(false);
+            businessRuleResponse.setFactNotFoundMessage("Not found business rule group " + request.getRuleGroupName());
+            return null;
         }
-
-        return evalBusinessRule(rulesGroup, request.getContext());
+        businessRuleResponse.setRuleGroupNotFound(true);
+        businessRuleResponse.setRulesComplied(evalBusinessRule(rulesGroup, request.getContext()));
+        businessRuleResponse.setComplied(businessRuleResponse.getRulesComplied().size() > 0);
+        businessRuleResponse.setRuleGroupEvaluated(request.getRuleGroupName());
+        if(!businessRuleResponse.isComplied()) {
+            businessRuleResponse.setFactNotFoundMessage(stringTemplate(rulesGroup.getFactNotFoundMessage(),request.getContext()));
+        }
+        return businessRuleResponse;
 
     }
 
-    public List<Object> evalBusinessRule(Group rulesGroup, Map<String,Object> context) {
+    public List<Rule> evalBusinessRule(Group rulesGroup, Map<String,Object> context) {
         List<Object> facts = new ArrayList<>();
         String fact = null;
         for( Rule rule : rulesGroup.getRules() ) {
@@ -113,6 +114,20 @@ public class RuleService {
 
         return null;
 
+    }
+
+    public String stringTemplate(String templateStr, Object context ) {
+        try {
+            Map<String,Object> ctx = new HashMap<>();
+            ctx.put("context",context);
+            SimpleTemplateEngine engine = new SimpleTemplateEngine();
+            Template template = engine.createTemplate(templateStr);
+            String msg = template.make(ctx).toString();
+            return msg;
+        } catch( Exception ex ) {
+            log.error(ex.getMessage());
+            return "error in factNotFoundMessage";
+        }
     }
 
 
