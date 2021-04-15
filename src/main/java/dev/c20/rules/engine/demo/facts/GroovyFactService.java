@@ -2,18 +2,23 @@ package dev.c20.rules.engine.demo.facts;
 
 import dev.c20.rules.engine.entities.Fact;
 import dev.c20.rules.engine.entities.IFact;
-import dev.c20.rules.engine.services.GroupResponse;
-import dev.c20.rules.engine.services.RuleResponse;
+import dev.c20.rules.engine.entities.Rule;
+import dev.c20.rules.engine.repositories.DataRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class GroovyFactService implements IFact   {
+public class GroovyFactService implements IFact {
 
-    public Object execute(RuleResponse ruleResponse, Fact fact, Object context ) {
+    @Autowired
+    DataRepository dataRepository;
 
-        return "Here execute fact " + fact.name();
-    }
-    public Object execute(GroupResponse groupResponse, Fact fact, Object context ) {
-        return null;
+    public Object execute(Rule rule, Fact fact, Object context) {
+        String factToDo = dataRepository.getDataOf("/Catálogos/Facts/" + fact.name());
+        if( factToDo == null ) {
+            return "Fact " + fact.name() + " has not implementation";
+        }
+        return "Here execute fact " + fact.name() + "\n" + factToDo;
     }
 }
+

@@ -25,7 +25,7 @@ public class RuleRestController {
     }
 
     @PostMapping("/evaluate-and-fire")
-    public List<Object> evalAndFireBusinessRule(@RequestBody RuleRequest request) {
+    public BusinessEvalRuleResponse evalAndFireBusinessRule(@RequestBody RuleRequest request) {
         return ruleService.evalAndFireBusinessRule(request);
     }
 

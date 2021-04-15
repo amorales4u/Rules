@@ -19,6 +19,9 @@ public interface DataRepository extends JpaRepository<Data, Long> {
     @Transactional
     public int copyTo(Long target, Long source);
 
+    @Query( "select o.data from Data o, Storage s where o.parent = s.id and s.path = ?1")
+    public String getDataOf( String path );
+
 
 
 }

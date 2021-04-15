@@ -28,9 +28,22 @@ public class RuleService {
         return fact;
 
     }
-    public List<Object> evalAndFireBusinessRule( RuleRequest request) {
+    public BusinessEvalRuleResponse evalAndFireBusinessRule( RuleRequest request) {
+
         BusinessRuleResponse businessRuleResponse = evalBusinessRule( request);
+
+        BusinessEvalRuleResponse businessEvalRuleResponse = new BusinessEvalRuleResponse();
+        businessEvalRuleResponse.setComplied( businessRuleResponse.isComplied() );
+        businessEvalRuleResponse.setRuleGroupFound( businessRuleResponse.isRuleGroupFound() );
+        businessEvalRuleResponse.setFactNotFoundMessage( businessRuleResponse.getFactNotFoundMessage() );
+        businessEvalRuleResponse.setRuleGroupEvaluated( businessRuleResponse.getRuleGroupEvaluated() );
+
+        if( !businessRuleResponse.isValid() ) {
+            return businessEvalRuleResponse;
+        }
+
         List<Object> responses = new ArrayList<>();
+
         for( Rule rule : businessRuleResponse.getRulesComplied() ) {
             String factName = rule.getFact();
             Fact factToFire = FactsRegistered.getInstance().get(factName);
@@ -39,15 +52,13 @@ public class RuleService {
                 throw new RuntimeException("Fact named [" + factName + " => " + rule.getName() + "] not exists");
             }
 
-            if( ruleResponse != null ) {
-                responses.add( ((IFact)factToFire.instance()).execute(ruleResponse, factToFire,request.getContext()) );
-            } else {
-                responses.add( ((IFact)factToFire.instance()).execute(groupResponse, factToFire,request.getContext()) );
-            }
+            responses.add( ((IFact)factToFire.instance()).execute(rule, factToFire,request.getContext()) );
 
         }
 
-        return responses;
+        businessEvalRuleResponse.setRulesEvaluated(responses);
+
+        return businessEvalRuleResponse;
     }
 
     public BusinessRuleResponse evalBusinessRule(RuleRequest request) {
@@ -55,12 +66,12 @@ public class RuleService {
         Group rulesGroup = WorkFlowBusiness.getInstance().getBussinessRules().find(request.getRuleGroupName());
 
         if( rulesGroup == null ) {
-            businessRuleResponse.setRuleGroupNotFound(true);
+            businessRuleResponse.setRuleGroupFound(false);
             businessRuleResponse.setComplied(false);
             businessRuleResponse.setFactNotFoundMessage("Not found business rule group " + request.getRuleGroupName());
             return null;
         }
-        businessRuleResponse.setRuleGroupNotFound(true);
+        businessRuleResponse.setRuleGroupFound(true);
         businessRuleResponse.setRulesComplied(evalBusinessRule(rulesGroup, request.getContext()));
         businessRuleResponse.setComplied(businessRuleResponse.getRulesComplied().size() > 0);
         businessRuleResponse.setRuleGroupEvaluated(request.getRuleGroupName());
@@ -72,7 +83,7 @@ public class RuleService {
     }
 
     public List<Rule> evalBusinessRule(Group rulesGroup, Map<String,Object> context) {
-        List<Object> facts = new ArrayList<>();
+        List<Rule> facts = new ArrayList<>();
         String fact = null;
         for( Rule rule : rulesGroup.getRules() ) {
             fact = evalRule( facts, rule, context, 0);
@@ -82,13 +93,9 @@ public class RuleService {
 
         log.info("Return defaultFact from rules group " + rulesGroup.getFactNotFound());
 
-        if( rulesGroup.getFactNotFound() != null ) {
-            GroupResponse response = GroupResponse.fromGroup(rulesGroup);
-            facts.add(response);
-        }
         return facts;
     }
-    public String evalRule(List<Object> facts, Rule rule, Map<String,Object> context, int level) {
+    public String evalRule(List<Rule> facts, Rule rule, Map<String,Object> context, int level) {
         EvalResult evalResult = Eval.getInstance().run(rule.getExpression(), context, rule.getName() );
         boolean result = (boolean)evalResult.getResult();
         log.info("Eval expression rule (in level " + level + " ):" + rule.getName() + " => " + result);
@@ -107,7 +114,7 @@ public class RuleService {
 
         if( result ) {
             if( rule.getFact() != null) {
-                facts.add( RuleResponse.fromRule(rule) );
+                facts.add( rule );
             }
             return rule.getFact();
         }
