@@ -26,30 +26,43 @@ public class RuleService {
 
     }
     public List<Object> evalAndFireBusinessRule( RuleRequest request) {
-        List<RuleResponse> facts = evalBusinessRule( request);
+        List<Object> facts = evalBusinessRule( request);
         List<Object> responses = new ArrayList<>();
-        for( RuleResponse factResponse : facts ) {
-            Fact factToFire = FactsRegistered.getInstance().get(factResponse.getName());
-            if( factToFire == null ) {
-                factToFire = FactsRegistered.getInstance().get(factResponse.getFactNotFound());
-                if( factToFire == null ) {
-                    throw new RuntimeException("Fact named " + factResponse.getName() + " not exists");
-                }
+        for( Object factObject : facts ) {
+            RuleResponse ruleResponse = null;
+            GroupResponse groupResponse = null;
+            String factName = null;
+            if(factObject instanceof GroupResponse){
+                groupResponse = (GroupResponse)factObject;
+                factName = groupResponse.factNotFound;
+            } else {
+                ruleResponse = (RuleResponse) factObject;
+                factName = ruleResponse.getName();
             }
 
-            responses.add( ((IFact)factToFire.instance()).execute(factToFire,request.getContext()) );
+            Fact factToFire = FactsRegistered.getInstance().get(factName);
+
+            if( factToFire == null ) {
+                throw new RuntimeException("Fact named " + ruleResponse.getName() + " not exists");
+            }
+
+            if( ruleResponse != null ) {
+                responses.add( ((IFact)factToFire.instance()).execute(ruleResponse, factToFire,request.getContext()) );
+            } else {
+                responses.add( ((IFact)factToFire.instance()).execute(groupResponse, factToFire,request.getContext()) );
+            }
 
         }
 
         return responses;
     }
 
-    public List<RuleResponse> evalBusinessRule( RuleRequest request) {
+    public List<Object> evalBusinessRule(RuleRequest request) {
 
         Group rulesGroup = WorkFlowBusiness.getInstance().getBussinessRules().find(request.getRuleGroupName());
 
         if( rulesGroup == null ) {
-            List<RuleResponse> result = new ArrayList<>();
+            List<Object> result = new ArrayList<>();
             return result;
         }
 
@@ -57,8 +70,8 @@ public class RuleService {
 
     }
 
-    public List<RuleResponse> evalBusinessRule(Group rulesGroup, Map<String,Object> context) {
-        List<RuleResponse> facts = new ArrayList<>();
+    public List<Object> evalBusinessRule(Group rulesGroup, Map<String,Object> context) {
+        List<Object> facts = new ArrayList<>();
         String fact = null;
         for( Rule rule : rulesGroup.getRules() ) {
             fact = evalRule( facts, rule, context, 0);
@@ -69,15 +82,12 @@ public class RuleService {
         log.info("Return defaultFact from rules group " + rulesGroup.getFactNotFound());
 
         if( rulesGroup.getFactNotFound() != null ) {
-            RuleResponse response = new RuleResponse();
-            response.setName( rulesGroup.getName() );
-            response.setDescription( rulesGroup.getDescription() );
-            response.setFactNotFound( rulesGroup.getFactNotFound() );
+            GroupResponse response = GroupResponse.fromGroup(rulesGroup);
             facts.add(response);
         }
         return facts;
     }
-    public String evalRule( List<RuleResponse> facts, Rule rule, Map<String,Object> context, int level) {
+    public String evalRule(List<Object> facts, Rule rule, Map<String,Object> context, int level) {
         EvalResult evalResult = Eval.getInstance().run(rule.getExpression(), context, rule.getName() );
         boolean result = (boolean)evalResult.getResult();
         log.info("Eval expression rule (in level " + level + " ):" + rule.getName() + " => " + result);

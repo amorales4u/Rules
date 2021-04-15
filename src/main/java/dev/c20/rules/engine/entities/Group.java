@@ -16,6 +16,7 @@ public class Group implements Serializable {
     String name;
     String description;
     String factNotFound = null;
+    String factNotFoundMessage = null;
     List<Rule> rules = null;
 
 
@@ -26,6 +27,16 @@ public class Group implements Serializable {
 
     public Group name(String name) {
         this.name = name;
+        return this;
+    }
+
+    public Group description(String description) {
+        this.description = description;
+        return this;
+    }
+
+    public Group factNotFoundMessage(String factNotFoundMessage) {
+        this.factNotFoundMessage = factNotFoundMessage;
         return this;
     }
 

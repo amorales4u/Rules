@@ -25,6 +25,7 @@ public class WorkFlowBusiness {
         bussinessRules = new BusinessRules();
         bussinessRules
                 .name("Reglas de solicitudes")
+
                 .startGroup()
                 .name("Inicio")
                 .factNotFound("GotoPorAtender")
@@ -32,7 +33,11 @@ public class WorkFlowBusiness {
 
                 .startGroup()
                 .name("Por resolver")
+                .description("Reglas para Mover una tarea que esta en 'Por Resolver'")
                 .factNotFound("NoHayFactPorResolver")
+                .factNotFoundMessage("Para mover la tarea es necesario que aceptada sea 1 o 2, " +
+                        " y si desea mandar un email lo tiene que indicar.\n" +
+                        " Los valores enviados son: aceptada=[$context.accept] email=[$context.email]")
                 .startRule()
                 .name("Regla para folder para aceptar")
                 .exclusive(false)

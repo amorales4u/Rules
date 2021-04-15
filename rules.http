@@ -16,3 +16,14 @@ Content-Type: application/json
 
 ###
 
+POST http://localhost:8095/rules/evaluate-and-fire
+Content-Type: application/json
+
+{
+  "ruleGroupName": "Por resolver",
+  "context": {
+    "accept": 12,
+    "email": "email"
+
+  }
+}

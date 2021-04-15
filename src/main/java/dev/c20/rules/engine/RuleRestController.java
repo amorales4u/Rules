@@ -1,7 +1,7 @@
 package dev.c20.rules.engine;
 
 import dev.c20.rules.engine.services.RuleRequest;
-import dev.c20.rules.engine.services.RuleResponse;
+import dev.c20.rules.engine.services.RuleResponseBase;
 import dev.c20.rules.engine.services.RuleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -20,7 +20,7 @@ public class RuleRestController {
     }
 
     @PostMapping("/evaluate")
-    public List<RuleResponse> evalBusinessRule(@RequestBody RuleRequest request) {
+    public List<Object> evalBusinessRule(@RequestBody RuleRequest request) {
         return ruleService.evalBusinessRule(request);
     }
 
