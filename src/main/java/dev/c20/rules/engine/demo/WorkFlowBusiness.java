@@ -1,6 +1,7 @@
 package dev.c20.rules.engine.demo;
 
 import dev.c20.rules.engine.entities.BusinessRules;
+import dev.c20.rules.engine.entities.RuleMapToFact;
 
 public class WorkFlowBusiness {
 
@@ -44,7 +45,11 @@ public class WorkFlowBusiness {
                 .addLine("context.accept == 1")
                 .startChildRule()
                 .name("Si es aceptada ademas y tiene definido un email")
-                .fact("SendEmail")
+                .fact( new RuleMapToFact().name("SendEmail")
+                        .addParameter("email","context.email")
+                        .addParameter("to", "context.to" )
+
+                )
                 .exclusive(false)
                 .addLine("context.email != null")
                 .finishChildRule()
