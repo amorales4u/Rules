@@ -16,7 +16,7 @@ public class Rule  implements Serializable {
 
     String name;
     String description;
-    RuleMapToFact fact;
+    MapRuleToFact fact;
     boolean exclusive = true;
 
     List<String> condition = null;
@@ -43,7 +43,7 @@ public class Rule  implements Serializable {
         return this;
     }
 
-    public Rule fact( RuleMapToFact fact ) {
+    public Rule fact( MapRuleToFact fact ) {
         this.fact = fact;
         return this;
     }

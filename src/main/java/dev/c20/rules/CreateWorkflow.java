@@ -11,8 +11,6 @@ import dev.c20.rules.engine.entities.Storage;
 import dev.c20.rules.engine.repositories.StorageRepository;
 import dev.c20.rules.engine.services.FactsRegistered;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
@@ -72,7 +70,7 @@ public class CreateWorkflow implements CommandLineRunner {
         log.info(storages.toString());
 
         FactsRegistered.getInstance().register( new Fact()
-                        .name("GotoAceptar")
+                        .name("GoToAceptar")
                         .description("Mueve la tarea a la carpeta de Aceptar")
                         .instance( groovyFactService) );
 

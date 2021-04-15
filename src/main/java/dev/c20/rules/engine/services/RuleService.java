@@ -12,22 +12,13 @@ import groovy.text.Template;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 @Service
 public class RuleService {
 
 
-    public String eval(String code, Map<String,Object> context, String nameCode, String defaultFact) {
-        String fact = defaultFact;
-
-        return fact;
-
-    }
     public BusinessEvalRuleResponse evalAndFireBusinessRule( RuleRequest request) {
 
         BusinessRuleResponse businessRuleResponse = evalBusinessRule( request);
@@ -45,14 +36,22 @@ public class RuleService {
         List<EvaluateFactResponse> responses = new ArrayList<>();
 
         for( Rule rule : businessRuleResponse.getRulesComplied() ) {
-            String factName = rule.getFact();
+            String factName = rule.getFact().name();
             Fact factToFire = FactsRegistered.getInstance().get(factName);
 
             if( factToFire == null ) {
                 throw new RuntimeException("Fact named [" + factName + " => " + rule.getName() + "] not exists");
             }
 
-            responses.add( ((IFact)factToFire.instance()).execute(rule, factToFire,request.getContext()) );
+            // mapping Rule context data to Fact parameters
+            Map<String,Object> params = new HashMap<>();
+            List<String> paramKeys = new ArrayList<String>(rule.getFact().getParameters().keySet());
+
+            for( String paramKey : paramKeys) {
+                params.put(paramKey, Eval.getInstance().run(rule.getFact().getParameters().get(paramKey),request.getContext(),"Eval" + ( new Date().getTime())));
+            }
+
+            responses.add( ((IFact)factToFire.instance()).execute(rule, factToFire,request.getContext(), params) );
 
         }
 
@@ -84,9 +83,8 @@ public class RuleService {
 
     public List<Rule> evalBusinessRule(Group rulesGroup, Map<String,Object> context) {
         List<Rule> facts = new ArrayList<>();
-        String fact = null;
         for( Rule rule : rulesGroup.getRules() ) {
-            fact = evalRule( facts, rule, context, 0);
+            String fact = evalRule( facts, rule, context, 0);
             if( fact != null )
                 return facts;
         }
@@ -103,7 +101,7 @@ public class RuleService {
             for( Rule childRule : rule.getRules()) {
                 String fact = evalRule(facts,childRule,context, level + 1);
                 if( fact != null ) {
-                    log.info("Finded Fact: " + fact);
+                    log.info("Found Fact: " + fact);
                     //facts.add(fact);
                     if( childRule.isExclusive() ) {
                         return fact;
@@ -112,11 +110,9 @@ public class RuleService {
             }
         }
 
-        if( result ) {
-            if( rule.getFact() != null) {
-                facts.add( rule );
-            }
-            return rule.getFact();
+        if( result && rule.getFact() != null ) {
+            facts.add( rule );
+            return rule.getFact().name();
         }
 
         return null;
@@ -129,8 +125,7 @@ public class RuleService {
             ctx.put("context",context);
             SimpleTemplateEngine engine = new SimpleTemplateEngine();
             Template template = engine.createTemplate(templateStr);
-            String msg = template.make(ctx).toString();
-            return msg;
+            return template.make(ctx).toString();
         } catch( Exception ex ) {
             log.error(ex.getMessage());
             return "error in factNotFoundMessage";

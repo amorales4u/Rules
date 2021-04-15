@@ -5,12 +5,14 @@
       "name": "Inicio",
       "description": null,
       "factNotFound": "GotoPorAtender",
+      "factNotFoundMessage": null,
       "rules": null
     },
     {
       "name": "Por resolver",
-      "description": null,
+      "description": "Reglas para Mover una tarea que esta en 'Por Resolver'",
       "factNotFound": "NoHayFactPorResolver",
+      "factNotFoundMessage": "Para mover la tarea es necesario que aceptada sea 1 o 2,  y si desea mandar un email lo tiene que indicar.\n Los valores enviados son: aceptada=[$context.accept] email=[$context.email]",
       "rules": [
         {
           "name": "Regla para folder para aceptar",
@@ -24,7 +26,15 @@
             {
               "name": "Si es aceptada ademas y tiene definido un email",
               "description": null,
-              "fact": "SendEmail",
+              "fact": {
+                "name": "SendEmail",
+                "parameters": {
+                  "subject": "context.subject",
+                  "to": "context.to",
+                  "body": "context.body",
+                  "email": "context.email"
+                }
+              },
               "exclusive": false,
               "condition": [
                 "context.email != null"
@@ -34,7 +44,13 @@
             {
               "name": "Si es aceptada ademas y NO tiene email",
               "description": null,
-              "fact": "GoToAceptar",
+              "fact": {
+                "name": "GoToAceptar",
+                "parameters": {
+                  "pathToMove": "context.pathToMove",
+                  "taskName": "context.taskName"
+                }
+              },
               "exclusive": false,
               "condition": [
                 "context.email == null"
@@ -46,7 +62,13 @@
         {
           "name": "Regla para folder para cancelar",
           "description": null,
-          "fact": "GotoCancelar",
+          "fact": {
+            "name": "GoToCancelar",
+            "parameters": {
+              "pathToMove": "context.pathToMove",
+              "taskName": "context.taskName"
+            }
+          },
           "exclusive": false,
           "condition": [
             "context.accept == 2"
@@ -56,7 +78,13 @@
         {
           "name": "Regla para folder para cancelar si o si",
           "description": null,
-          "fact": "GotoAceptar",
+          "fact": {
+            "name": "GoToAceptar",
+            "parameters": {
+              "pathToMove": "context.pathToMove",
+              "taskName": "context.taskName"
+            }
+          },
           "exclusive": false,
           "condition": [
             "context.accept == 1"
@@ -69,6 +97,7 @@
       "name": "Por cancelar",
       "description": null,
       "factNotFound": "GotoCancelar",
+      "factNotFoundMessage": null,
       "rules": null
     }
   ]

@@ -1,7 +1,7 @@
 package dev.c20.rules.engine.demo;
 
 import dev.c20.rules.engine.entities.BusinessRules;
-import dev.c20.rules.engine.entities.RuleMapToFact;
+import dev.c20.rules.engine.entities.MapRuleToFact;
 
 public class WorkFlowBusiness {
 
@@ -45,10 +45,12 @@ public class WorkFlowBusiness {
                 .addLine("context.accept == 1")
                 .startChildRule()
                 .name("Si es aceptada ademas y tiene definido un email")
-                .fact( new RuleMapToFact().name("SendEmail")
+                .fact( new MapRuleToFact()
+                        .name("SendEmail")
                         .addParameter("email","context.email")
                         .addParameter("to", "context.to" )
-
+                        .addParameter("subject", "context.subject" )
+                        .addParameter("body", "context.body" )
                 )
                 .exclusive(false)
                 .addLine("context.email != null")
@@ -57,7 +59,11 @@ public class WorkFlowBusiness {
                 .startChildRule()
                 .name("Si es aceptada ademas y NO tiene email")
                 .exclusive(false)
-                .fact("GoToAceptar")
+                .fact(new MapRuleToFact()
+                        .name("GoToAceptar")
+                        .addParameter("taskName", "context.taskName")
+                        .addParameter("pathToMove", "context.pathToMove")
+                )
                 .addLine("context.email == null")
                 .finishChildRule()
 
@@ -66,14 +72,20 @@ public class WorkFlowBusiness {
                 .startRule()
                 .name("Regla para folder para cancelar")
                 .exclusive(false)
-                .fact("GotoCancelar")
+                .fact(new MapRuleToFact()
+                        .name("GoToCancelar")
+                        .addParameter("taskName", "context.taskName")
+                        .addParameter("pathToMove", "context.pathToMove"))
                 .addLine("context.accept == 2")
                 .finishRule()
 
                 .startRule()
                 .name("Regla para folder para cancelar si o si")
                 .exclusive(false)
-                .fact("GotoAceptar")
+                .fact(new MapRuleToFact()
+                        .name("GoToAceptar")
+                        .addParameter("taskName", "context.taskName")
+                        .addParameter("pathToMove", "context.pathToMove"))
                 .addLine("context.accept == 1")
                 .finishRule()
 

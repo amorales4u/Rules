@@ -7,11 +7,13 @@ import dev.c20.rules.engine.services.EvaluateFactResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
+
 @Service
 @Slf4j
 public class GroovyStringFactService implements IFact   {
 
-    public EvaluateFactResponse execute(Rule rule, Fact fact, Object context ) {
+    public EvaluateFactResponse execute(Rule rule, Fact fact, Object context, Map<String,Object> params ) {
         EvaluateFactResponse result = new EvaluateFactResponse();
         result.setRuleEvaluated(rule.getName());
         result.setDescription(rule.getDescription());
