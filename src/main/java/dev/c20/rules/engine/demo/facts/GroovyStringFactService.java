@@ -21,5 +21,8 @@ public class GroovyStringFactService implements IFact   {
         return result;
     }
 
+    public void test() {
+        log.info("Test in GroovyFactService");
+    }
 
 }

@@ -1,6 +1,7 @@
 package dev.c20.rules.engine.services;
 
 import dev.c20.rules.engine.demo.WorkFlowBusiness;
+import dev.c20.rules.engine.demo.facts.GroovyStringFactService;
 import dev.c20.rules.engine.entities.Fact;
 import dev.c20.rules.engine.entities.IFact;
 import dev.c20.rules.engine.entities.Rule;
@@ -10,6 +11,8 @@ import dev.c20.rules.engine.tools.EvalResult;
 import groovy.text.SimpleTemplateEngine;
 import groovy.text.Template;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -18,6 +21,21 @@ import java.util.*;
 @Service
 public class RuleService {
 
+
+    @Autowired
+    ApplicationContext applicationContext;
+
+    public Object getInstance(String clazzName) {
+        try {
+            Class<?> act = Class.forName(clazzName);
+            Object instance = (GroovyStringFactService)applicationContext.getBean(act);
+            return instance;
+        } catch (ClassNotFoundException e) {
+            log.error("@Service not found " + clazzName,e);
+        }
+
+        return null;
+    }
 
     public BusinessEvalRuleResponse evalAndFireBusinessRule( RuleRequest request) {
 
@@ -48,9 +66,17 @@ public class RuleService {
             List<String> paramKeys = new ArrayList<String>(rule.getFact().getParameters().keySet());
 
             for( String paramKey : paramKeys) {
-                params.put(paramKey, Eval.getInstance().run(rule.getFact().getParameters().get(paramKey),request.getContext(),"Eval" + ( new Date().getTime())));
+                EvalResult paramResult = Eval.getInstance().run(rule.getFact().getParameters().get(paramKey),request.getContext(),"Eval" + ( new Date().getTime()));
+                if( paramResult.isError() ) {
+                    params.put(paramKey, null);
+                    log.error(paramKey + "=>" + paramResult.getErrorMessage());
+                } else {
+                    params.put(paramKey, paramResult.getResult());
+                }
             }
-
+            if( factToFire.instance() == null ) {
+                factToFire.instance( getInstance(factToFire.clazzName()));
+            }
             responses.add( ((IFact)factToFire.instance()).execute(rule, factToFire,request.getContext(), params) );
 
         }

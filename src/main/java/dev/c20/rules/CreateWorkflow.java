@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.ApplicationContext;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
@@ -45,12 +46,6 @@ public class CreateWorkflow implements CommandLineRunner {
     @Autowired
     StorageRepository storageRepository;
 
-    @Autowired
-    GroovyFactService groovyFactService;
-
-    @Autowired
-    GroovyStringFactService groovyStringFactService;
-
     @Override
     public void run(String... args) throws Exception {
 
@@ -72,27 +67,31 @@ public class CreateWorkflow implements CommandLineRunner {
         FactsRegistered.getInstance().register( new Fact()
                         .name("GoToAceptar")
                         .description("Mueve la tarea a la carpeta de Aceptar")
-                        .instance( groovyFactService) );
+                        .clazzName("dev.c20.rules.engine.demo.facts.GroovyFactService") );
 
         FactsRegistered.getInstance().register( new Fact()
                 .name("GotoPorAtender")
                 .description("Mueve la tarea a la carpeta por atender")
-                .instance( groovyFactService) );
+                .clazzName("dev.c20.rules.engine.demo.facts.GroovyFactService") );
 
         FactsRegistered.getInstance().register( new Fact()
                 .name("SendEmail")
                 .description("Manda un correo")
-                .instance( groovyFactService) );
+                .addParameter("email")
+                .addParameter("to")
+                .addParameter("subject")
+                .addParameter("body")
+                .clazzName("dev.c20.rules.engine.demo.facts.GroovyFactService") );
 
         FactsRegistered.getInstance().register( new Fact()
                 .name("GotoCancelar")
                 .description("Manda la tarea a la carpeta de cancelar")
-                .instance( groovyFactService) );
+                .clazzName("dev.c20.rules.engine.demo.facts.GroovyFactService") );
 
         FactsRegistered.getInstance().register( new Fact()
                 .name("NoHayFactPorResolver")
                 .description("Regresa un error pues no se resuelve la carpeta")
-                .instance( groovyStringFactService) );
+                .clazzName("dev.c20.rules.engine.demo.facts.GroovyStringFactService") );
 
 
     }

@@ -5,12 +5,14 @@ import dev.c20.rules.engine.entities.IFact;
 import dev.c20.rules.engine.entities.Rule;
 import dev.c20.rules.engine.repositories.DataRepository;
 import dev.c20.rules.engine.services.EvaluateFactResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
 
 @Service
+@Slf4j
 public class GroovyFactService implements IFact {
 
     @Autowired
@@ -20,7 +22,10 @@ public class GroovyFactService implements IFact {
         String factToDo = dataRepository.getDataOf("/Catálogos/Facts/" + fact.name());
         EvaluateFactResponse result = new EvaluateFactResponse();
         result.setRuleEvaluated(rule.getName());
+        result.setFact(rule.getFact().getName());
         result.setDescription(rule.getDescription());
+
+        log.info(params.toString());
 
         if( factToDo == null ) {
             result.setEvaluatedCorrectly(false);
@@ -30,5 +35,7 @@ public class GroovyFactService implements IFact {
         result.setResult("Here execute fact " + fact.name() + "\n" + factToDo);
         return result;
     }
+
+
 }
 

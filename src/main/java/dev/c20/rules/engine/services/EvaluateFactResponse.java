@@ -10,5 +10,6 @@ public class EvaluateFactResponse {
     String evaluationError;
     String ruleEvaluated;
     String description;
+    String fact;
     Object result;
 }
