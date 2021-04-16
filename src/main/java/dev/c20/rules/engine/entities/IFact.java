@@ -1,6 +1,6 @@
 package dev.c20.rules.engine.entities;
 
-import dev.c20.rules.engine.services.EvaluateFactResponse;
+import dev.c20.rules.engine.services.entities.EvaluateFactResponse;
 
 import java.util.Map;
 

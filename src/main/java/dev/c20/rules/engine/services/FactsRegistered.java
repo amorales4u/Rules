@@ -23,7 +23,7 @@ public class FactsRegistered {
     }
 
     public void register( Fact fact ) {
-        if( !( fact.instance() instanceof IFact ) ) {
+        if( fact.instance() != null && !( fact.instance() instanceof IFact ) ) {
             throw new RuntimeException("Fact instance not implements IFact interface");
         }
         facts.put( fact.name(), fact );

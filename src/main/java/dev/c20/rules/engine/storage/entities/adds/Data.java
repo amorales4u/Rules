@@ -1,4 +1,4 @@
-package dev.c20.rules.engine.entities;
+package dev.c20.rules.engine.storage.entities.adds;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;

@@ -38,7 +38,7 @@ public class Eval {
         try {
             Class groovyClass = null;
             GroovyObject groovyObject = null;
-            if( !cache.containsKey(expressionName) ) {
+            if( expressionName.equalsIgnoreCase("nocache") || !cache.containsKey(expressionName) ) {
                 groovyClass = loader.parseClass(code);
                 groovyObject = (GroovyObject)groovyClass.newInstance();
                 cache.put(expressionName,groovyObject);

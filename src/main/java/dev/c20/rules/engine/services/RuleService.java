@@ -6,6 +6,9 @@ import dev.c20.rules.engine.entities.Fact;
 import dev.c20.rules.engine.entities.IFact;
 import dev.c20.rules.engine.entities.Rule;
 import dev.c20.rules.engine.entities.Group;
+import dev.c20.rules.engine.services.entities.BusinessEvalRuleResponse;
+import dev.c20.rules.engine.services.entities.BusinessRuleResponse;
+import dev.c20.rules.engine.services.entities.EvaluateFactResponse;
 import dev.c20.rules.engine.tools.Eval;
 import dev.c20.rules.engine.tools.EvalResult;
 import groovy.text.SimpleTemplateEngine;
@@ -37,7 +40,7 @@ public class RuleService {
         return null;
     }
 
-    public BusinessEvalRuleResponse evalAndFireBusinessRule( RuleRequest request) {
+    public BusinessEvalRuleResponse evalAndFireBusinessRule(RuleRequest request) {
 
         BusinessRuleResponse businessRuleResponse = evalBusinessRule( request);
 
@@ -66,7 +69,7 @@ public class RuleService {
             List<String> paramKeys = new ArrayList<String>(rule.getFact().getParameters().keySet());
 
             for( String paramKey : paramKeys) {
-                EvalResult paramResult = Eval.getInstance().run(rule.getFact().getParameters().get(paramKey),request.getContext(),"Eval" + ( new Date().getTime()));
+                EvalResult paramResult = Eval.getInstance().run(rule.getFact().getParameters().get(paramKey),request.getContext(),"nocache");
                 if( paramResult.isError() ) {
                     params.put(paramKey, null);
                     log.error(paramKey + "=>" + paramResult.getErrorMessage());
@@ -100,6 +103,7 @@ public class RuleService {
         businessRuleResponse.setRulesComplied(evalBusinessRule(rulesGroup, request.getContext()));
         businessRuleResponse.setComplied(businessRuleResponse.getRulesComplied().size() > 0);
         businessRuleResponse.setRuleGroupEvaluated(request.getRuleGroupName());
+
         if(!businessRuleResponse.isComplied()) {
             businessRuleResponse.setFactNotFoundMessage(stringTemplate(rulesGroup.getFactNotFoundMessage(),request.getContext()));
         }
@@ -123,6 +127,7 @@ public class RuleService {
         EvalResult evalResult = Eval.getInstance().run(rule.getExpression(), context, rule.getName() );
         boolean result = (boolean)evalResult.getResult();
         log.info("Eval expression rule (in level " + level + " ):" + rule.getName() + " => " + result);
+
         if( rule.getRules() != null && rule.getRules().size() > 0 && result ) {
             for( Rule childRule : rule.getRules()) {
                 String fact = evalRule(facts,childRule,context, level + 1);

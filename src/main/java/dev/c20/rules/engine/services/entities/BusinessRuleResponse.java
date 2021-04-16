@@ -1,4 +1,4 @@
-package dev.c20.rules.engine.services;
+package dev.c20.rules.engine.services.entities;
 
 import dev.c20.rules.engine.entities.Rule;
 import lombok.Getter;

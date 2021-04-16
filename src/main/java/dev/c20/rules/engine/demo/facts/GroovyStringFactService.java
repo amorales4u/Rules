@@ -3,7 +3,7 @@ package dev.c20.rules.engine.demo.facts;
 import dev.c20.rules.engine.entities.Fact;
 import dev.c20.rules.engine.entities.IFact;
 import dev.c20.rules.engine.entities.Rule;
-import dev.c20.rules.engine.services.EvaluateFactResponse;
+import dev.c20.rules.engine.services.entities.EvaluateFactResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 

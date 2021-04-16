@@ -14,6 +14,7 @@ import java.util.Map;
 public class Fact {
 
     private String name;
+    private String category;
     private String description;
     private String clazzName;
     private Object instance;
