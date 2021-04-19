@@ -2,14 +2,12 @@ package dev.c20.rules;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.c20.rules.engine.demo.WorkFlowBusiness;
-import dev.c20.rules.engine.entities.BusinessRules;
-import dev.c20.rules.engine.entities.Fact;
-import dev.c20.rules.engine.entities.Group;
+import dev.c20.rules.engine.entities.*;
+import dev.c20.rules.engine.services.BusinessRulesService;
 import dev.c20.rules.engine.storage.entities.Storage;
-import dev.c20.rules.engine.storage.entities.adds.Value;
 import dev.c20.rules.engine.storage.repository.StorageRepository;
-import dev.c20.rules.engine.services.FactsRegistered;
-import dev.c20.rules.engine.storage.repository.ValueRepository;
+import dev.c20.workflow.commons.tools.PathUtils;
+import dev.c20.workflow.commons.tools.StoragePathUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -23,6 +21,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 @Component
 @Order(1)
@@ -32,6 +31,9 @@ public class CreateWorkflow implements CommandLineRunner {
     @org.springframework.beans.factory.annotation.Value("classpath:/static/resource.txt")
     private Resource resource;
 
+    @Autowired
+    StorageRepository storageRepository;
+
     public static String asString(Resource resource) {
         try (Reader reader = new InputStreamReader(resource.getInputStream(), StandardCharsets.UTF_8)) {
             return FileCopyUtils.copyToString(reader);
@@ -40,65 +42,9 @@ public class CreateWorkflow implements CommandLineRunner {
         }
     }
 
-    @Autowired
-    StorageRepository storageRepository;
 
     @Autowired
-    ValueRepository valueRepository;
-
-    private Storage addFolder( String path , String description) {
-        try {
-            Storage storage = new Storage();
-            storage.setPath(path);
-            storage.setDescription("System info");
-            storageRepository.save(storage);
-            return storage;
-        } catch( Exception ex ) {
-            log.error("Error al crear el path:", ex);
-            return null;
-        }
-
-    }
-    private void addTreeFact() {
-
-        addFolder( "/system/", "System information");
-        addFolder( "/system/business/", "System business rules and facts");
-        addFolder( "/system/business/facts/", "System facts for rules");
-        addFolder( "/system/business/rules/", "System rules");
-
-
-    }
-    private Storage persistFact(Fact fact) {
-        String path = "/system/business/facts/" + ( fact.category() != null ? fact.category() + "/" : "" )  + fact.name();
-        if( fact.category() != null ) {
-            addFolder( path, "Fact category " + fact.category());
-        }
-
-        Storage storage = storageRepository.getFile(path);
-
-        if( storage == null ) {
-            storage = new Storage();
-            storage.setPath(path);
-            log.info("File not found:" + path);
-        } else {
-            log.info("File found:" + path);
-        }
-        storage.setDescription(fact.description());
-        storage.setClazzName(fact.clazzName());
-        storageRepository.save(storage);
-
-        valueRepository.deleteAll( storage );
-
-        for( String param : fact.parameters() ) {
-            Value value = new Value();
-            value.setParent(storage);
-            value.setName(param);
-            value.setValue("param");
-            valueRepository.save(value);
-        }
-
-        return null;
-    }
+    private BusinessRulesService businessRulesService;
 
     @Override
     public void run(String... args) throws Exception {
@@ -107,7 +53,7 @@ public class CreateWorkflow implements CommandLineRunner {
         log.info(asString(resource));
 
         log.info("Creating business tree for persist");
-        addTreeFact();
+        businessRulesService.addTreeFact();
 
 
         BusinessRules businessRules = WorkFlowBusiness.getInstance().getBussinessRules();
@@ -117,22 +63,22 @@ public class CreateWorkflow implements CommandLineRunner {
         Group rulesGroup = businessRules.find("Por resolver");
         log.info(objectMapper.writeValueAsString(rulesGroup));
 
-        persistFact(new Fact()
+        businessRulesService.persistFact(new Fact()
                 .name("GoToAceptar")
                 .description("Mueve la tarea a la carpeta de Aceptar")
                 .clazzName("dev.c20.rules.engine.demo.facts.GroovyFactService"));
 
-        persistFact( new Fact()
+        businessRulesService.persistFact( new Fact()
                         .name("GoToAceptar")
                         .description("Mueve la tarea a la carpeta de Aceptar")
                         .clazzName("dev.c20.rules.engine.demo.facts.GroovyFactService") );
 
-        persistFact( new Fact()
+        businessRulesService.persistFact( new Fact()
                 .name("GotoPorAtender")
                 .description("Mueve la tarea a la carpeta por atender")
                 .clazzName("dev.c20.rules.engine.demo.facts.GroovyFactService") );
 
-        persistFact( new Fact()
+        businessRulesService.persistFact( new Fact()
                 .name("SendEmail")
                 .description("Manda un correo")
                 .addParameter("email")
@@ -141,16 +87,91 @@ public class CreateWorkflow implements CommandLineRunner {
                 .addParameter("body")
                 .clazzName("dev.c20.rules.engine.demo.facts.GroovyFactService") );
 
-        persistFact( new Fact()
+        businessRulesService.persistFact( new Fact()
                 .name("GotoCancelar")
                 .description("Manda la tarea a la carpeta de cancelar")
                 .clazzName("dev.c20.rules.engine.demo.facts.GroovyFactService") );
 
-        persistFact( new Fact()
+        businessRulesService.persistFact( new Fact()
                 .name("NoHayFactPorResolver")
                 .description("Regresa un error pues no se resuelve la carpeta")
                 .clazzName("dev.c20.rules.engine.demo.facts.GroovyStringFactService") );
 
+        businessRulesService.persistGroup(new Group()
+                .name("Inicio")
+                .factNotFound("GotoPorAtender"));
+
+        businessRulesService.persistGroup(new Group()
+                .name("Por resolver")
+                .description("Reglas para Mover una tarea que esta en 'Por Resolver'")
+                .factNotFound("NoHayFactPorResolver")
+                .factNotFoundMessage("Para mover la tarea es necesario que aceptada sea 1 o 2, " +
+                        " y si desea mandar un email lo tiene que indicar.\n" +
+                        " Los valores enviados son: aceptada=[$context.accept] email=[$context.email]")
+        );
+
+        businessRulesService.persistGroup(new Group()
+                .name("Por cancelar")
+                .factNotFound( "GotoCancelar"));
+
+        businessRulesService.persistRule(new Rule()
+                .name("DEMO - Enviar tarea a Aceptar")
+                .exclusive(false)
+                .addLine("context.accept == 1"));
+
+        businessRulesService.persistRule(new Rule()
+                        .name("DEMO - Es aceptada y tiene definido un email")
+                        .addLine("context.email != null")
+                        .exclusive(false)
+                        .fact( new MapRuleToFact()
+                                .name("SendEmail")
+                                .addParameter("email","context.email")
+                                .addParameter("to", "context.to" )
+                                .addParameter("subject", "context.subject" )
+                                .addParameter("body", "context.body" )
+                        )
+                        );
+        businessRulesService.persistRule(new Rule()
+                        .name("DEMO - Es aceptada y NO tiene email")
+                        .addLine("context.email == null")
+                        .exclusive(false)
+                        .fact(new MapRuleToFact()
+                                .name("GoToAceptar")
+                                .addParameter("taskName", "context.taskName")
+                                .addParameter("pathToMove", "context.pathToMove")
+                        )
+        );
+
+        businessRulesService.persistRule(new Rule()
+                        .name("DEMO - Mover tarea a Cancelar")
+                        .addLine("context.accept == 2")
+                        .exclusive(false)
+                        .fact(new MapRuleToFact()
+                                .name("GoToCancelar")
+                                .addParameter("taskName", "context.taskName")
+                                .addParameter("pathToMove", "context.pathToMove"))
+        );
+
+
+        businessRulesService.persistRule(new Rule()
+                        .name("DEMO - Cancela una tarea")
+                        .exclusive(false)
+                        .addLine("context.accept == 1")
+                        .fact(new MapRuleToFact()
+                                .name("GoToAceptar")
+                                .addParameter("taskName", "context.taskName")
+                                .addParameter("pathToMove", "context.pathToMove"))
+        );
+
+        List<Storage> dir = storageRepository.dir(
+                new StoragePathUtil("/system/business/")
+                        .setShowFolders(false)
+                        .setShowFiles(true)
+                .setRecursive(true)
+        );
+        for( Storage storage : dir ) {
+            log.info(storage.getPath());
+        }
         /*
         FactsRegistered.getInstance().register( new Fact()
                 .name("GoToAceptar")
@@ -159,5 +180,43 @@ public class CreateWorkflow implements CommandLineRunner {
 
          */
     }
+
+    public static void main(String[] args)  {
+        String path = "/workflow/storage/file/asasas";
+        System.out.println(path);
+        System.out.println(PathUtils.getPathFromLevel(path,4));
+        System.out.println(getName(PathUtils.getPathFromLevel(path,4)));
+        // path level: /0/1/
+        path = "/Workflows/";
+        System.out.println(path);
+        System.out.println(PathUtils.getParentFolder( path));
+        System.out.println(PathUtils.getPathLevel( path));
+
+        path = "/Workflows/EUC-27/Catalogos/";
+        System.out.println(path);
+        System.out.println(getName(path));
+        System.out.println(PathUtils.getPathLevel( path));
+        System.out.println(PathUtils.getParentFolder( path));
+        System.out.println(PathUtils.getPathPart( path, 2));
+        System.out.println(PathUtils.getPathNameFromLevel( path, 0));
+        System.out.println(PathUtils.getPathNameFromLevel( path, 1));
+        System.out.println(PathUtils.getPathNameFromLevel( path, 2));
+
+    }
+
+    static public String getPathNameFromLevel(String resource, int level) {
+        return PathUtils.splitPath(resource)[level];
+    }
+    static public String getName(String resource) {
+
+        if ("/".equals(resource)) {
+            return "/";
+        }
+        // remove the last char, for a folder this will be "/", for a file it does not matter
+        String parent = (resource.substring(0, resource.length() - 1));
+        // now as the name does not end with "/", check for the last "/" which is the parent folder name
+        return parent.substring(parent.lastIndexOf('/') + 1);
+    }
+
 
 }

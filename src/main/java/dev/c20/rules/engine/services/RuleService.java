@@ -28,13 +28,35 @@ public class RuleService {
     @Autowired
     ApplicationContext applicationContext;
 
-    public Object getInstance(String clazzName) {
+    public Class<?> getClassFromName(String clazzName) {
         try {
             Class<?> act = Class.forName(clazzName);
-            Object instance = (GroovyStringFactService)applicationContext.getBean(act);
-            return instance;
+            return act;
         } catch (ClassNotFoundException e) {
-            log.error("@Service not found " + clazzName,e);
+            log.error("Class not found " + clazzName,e);
+        }
+
+        return null;
+    }
+    public Object getInstance(String clazzName) {
+        try {
+            Class<?> act;
+            Object instance;
+            if( clazzName.startsWith("@Service:") ) {
+                clazzName = clazzName.substring(10);
+                act = getClassFromName(clazzName);
+                instance = (GroovyStringFactService)applicationContext.getBean(act);
+            } else{
+                act = getClassFromName(clazzName);
+                instance = act.newInstance();
+            }
+            return instance;
+        } catch (InstantiationException e) {
+            log.error("InstantiationException " + clazzName,  e );
+        } catch (IllegalAccessException e) {
+            log.error("IllegalAccessException " + clazzName, e );
+        } catch (Exception e) {
+            log.error("Exception " + clazzName ,  e );
         }
 
         return null;
