@@ -120,7 +120,7 @@ public class CreateWorkflow implements CommandLineRunner {
                 .addLine("context.accept == 1"));
 
         businessRulesService.persistRule(new Rule()
-                        .name("DEMO - Es aceptada y tiene definido un email")
+                        .name("Es aceptada y tiene definido un email")
                         .addLine("context.email != null")
                         .exclusive(false)
                         .fact( new MapRuleToFact()
@@ -132,7 +132,7 @@ public class CreateWorkflow implements CommandLineRunner {
                         )
                         );
         businessRulesService.persistRule(new Rule()
-                        .name("DEMO - Es aceptada y NO tiene email")
+                        .name("Es aceptada y NO tiene email")
                         .addLine("context.email == null")
                         .exclusive(false)
                         .fact(new MapRuleToFact()
@@ -143,7 +143,7 @@ public class CreateWorkflow implements CommandLineRunner {
         );
 
         businessRulesService.persistRule(new Rule()
-                        .name("DEMO - Mover tarea a Cancelar")
+                        .name("Mover tarea a Cancelar")
                         .addLine("context.accept == 2")
                         .exclusive(false)
                         .fact(new MapRuleToFact()
@@ -154,7 +154,7 @@ public class CreateWorkflow implements CommandLineRunner {
 
 
         businessRulesService.persistRule(new Rule()
-                        .name("DEMO - Cancela una tarea")
+                        .name("Cancela una tarea")
                         .exclusive(false)
                         .addLine("context.accept == 1")
                         .fact(new MapRuleToFact()
@@ -163,8 +163,19 @@ public class CreateWorkflow implements CommandLineRunner {
                                 .addParameter("pathToMove", "context.pathToMove"))
         );
 
+
+        businessRulesService.rulesForGroup( "/system/business/groups/Por resolver/",
+            "Regla para folder para aceptar",
+            "Regla para folder para aceptar/Es aceptada y tiene definido un email",
+            "Regla para folder para aceptar/Es aceptada y NO tiene email",
+            "Mover tarea a Cancelar",
+            "Mover tarea a Cancelar/Cancela una tarea"
+
+
+        );
+
         List<Storage> dir = storageRepository.dir(
-                new StoragePathUtil("/system/business/")
+                new StoragePathUtil("/system/business/groups/Por resolver/")
                         .setShowFolders(false)
                         .setShowFiles(true)
                 .setRecursive(true)

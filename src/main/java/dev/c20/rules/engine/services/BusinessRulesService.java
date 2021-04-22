@@ -9,6 +9,7 @@ import dev.c20.rules.engine.storage.entities.adds.Value;
 import dev.c20.rules.engine.storage.repository.StorageRepository;
 import dev.c20.rules.engine.storage.repository.ValueRepository;
 import dev.c20.workflow.commons.tools.PathUtils;
+import dev.c20.workflow.commons.tools.StoragePathUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -128,6 +129,7 @@ public class BusinessRulesService {
         } else {
             log.info("Group found (update):" + path);
         }
+        storage.setClazzName(group.getClass().getName());
         storage.setDescription(group.getDescription());
         storageRepository.save(storage);
 
@@ -191,6 +193,7 @@ public class BusinessRulesService {
         } else {
             log.info("Rule found (update):" + path);
         }
+        storage.setClazzName(rule.getClass().getName());
         storage.setDescription(rule.getDescription());
         storage.setVisible(rule.isExclusive());
         storageRepository.save(storage);
@@ -265,6 +268,30 @@ public class BusinessRulesService {
 
         Storage storage = storageRepository.getFile(path);
         return readRuleFromStorage(storage);
+    }
+
+    public void rulesForGroup( String groupPath, String... rules) {
+
+        Storage storage = storageRepository.getFolder(groupPath);
+        if (storage == null) {
+            log.error( "Group not exists " + groupPath);
+            return;
+        }
+        int deletedCount = storageRepository.deleteChilden(
+                new StoragePathUtil(groupPath)
+        );
+
+        log.warn( "Eliminated " + deletedCount + " record(s)");
+
+
+        for( String rule : rules ) {
+            String rulePath = groupPath + rule + "/";
+            log.info( "Adding rule:" + rulePath);
+            Storage folder = new Storage();
+            folder.setPath(rulePath);
+            storageRepository.save(folder);
+        }
+
     }
 
 }
