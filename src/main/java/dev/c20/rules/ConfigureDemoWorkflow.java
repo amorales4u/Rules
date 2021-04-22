@@ -26,7 +26,7 @@ import java.util.List;
 @Component
 @Order(1)
 @Slf4j
-public class CreateWorkflow implements CommandLineRunner {
+public class ConfigureDemoWorkflow implements CommandLineRunner {
 
     @org.springframework.beans.factory.annotation.Value("classpath:/static/resource.txt")
     private Resource resource;
@@ -49,7 +49,7 @@ public class CreateWorkflow implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
 
-        log.info("Run after app started");
+        log.info("Configure DEMO Business Rules, Rules, Groups and Facts");
         log.info(asString(resource));
 
         log.info("Creating business tree for persist");
@@ -115,7 +115,7 @@ public class CreateWorkflow implements CommandLineRunner {
                 .factNotFound( "GotoCancelar"));
 
         businessRulesService.persistRule(new Rule()
-                .name("DEMO - Enviar tarea a Aceptar")
+                .name("Enviar tarea a Aceptar")
                 .exclusive(false)
                 .addLine("context.accept == 1"));
 
@@ -164,10 +164,10 @@ public class CreateWorkflow implements CommandLineRunner {
         );
 
 
-        businessRulesService.rulesForGroup( "/system/business/groups/Por resolver/",
-            "Regla para folder para aceptar",
-            "Regla para folder para aceptar/Es aceptada y tiene definido un email",
-            "Regla para folder para aceptar/Es aceptada y NO tiene email",
+        businessRulesService.setRulesForGroup( "/system/business/groups/Por resolver/",
+            "Enviar tarea a Aceptar",
+            "Enviar tarea a Aceptar/Es aceptada y tiene definido un email",
+            "Enviar tarea a Aceptar/Es aceptada y NO tiene email",
             "Mover tarea a Cancelar",
             "Mover tarea a Cancelar/Cancela una tarea"
 

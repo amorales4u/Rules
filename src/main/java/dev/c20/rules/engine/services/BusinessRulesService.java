@@ -33,9 +33,12 @@ public class BusinessRulesService {
             Storage storage;
             for( String p : paths ) {
                 path += p + "/";
-                storage = storageRepository.getFolder(p);
+                storage = storageRepository.getFolder(path);
                 if( storage != null ) {
+                    log.info("Path " + path + " already exists");
                     continue;
+                } else {
+                    log.info("Creating folder Path " + path );
                 }
                 storage = new Storage();
                 storage.setPath(path);
@@ -270,7 +273,7 @@ public class BusinessRulesService {
         return readRuleFromStorage(storage);
     }
 
-    public void rulesForGroup( String groupPath, String... rules) {
+    public void setRulesForGroup(String groupPath, String... rules) {
 
         Storage storage = storageRepository.getFolder(groupPath);
         if (storage == null) {

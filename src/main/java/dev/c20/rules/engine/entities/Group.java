@@ -1,9 +1,11 @@
 package dev.c20.rules.engine.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import dev.c20.workflow.commons.tools.PathUtils;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -11,6 +13,7 @@ import java.util.List;
 
 @Getter
 @Setter
+@Slf4j
 public class Group implements Serializable {
 
     String name;
@@ -60,6 +63,32 @@ public class Group implements Serializable {
         return parent;
     }
 
+    public Group addTreeRule( String path, Rule rule) {
+        if( rule == null ) {
+            log.error("Rule is null for path " + path);
+            return this;
+        }
+
+        if( rules == null ) {
+            rules = new ArrayList<>();
+        }
+        String[] paths = PathUtils.splitPath(PathUtils.getParentFolder( path ));
+        List<Rule> addIn = rules;
+        for( int i = 0; i < paths.length; i ++ ) {
+            for (Rule parentRule : addIn) {
+                if (parentRule.getName().equals(paths[i])) {
+                    log.info("Found:" + parentRule.getName());
+                    if( parentRule.getRules() == null ) {
+                        parentRule.setRules(new ArrayList<>());
+                    }
+                    addIn = parentRule.getRules();
+                    break;
+                }
+            }
+        }
+        addIn.add( rule );
+        return this;
+    }
 
 
 }
