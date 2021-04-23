@@ -40,14 +40,12 @@ public class RuleService {
     }
     public Object getInstance(String clazzName) {
         try {
-            Class<?> act;
+            Class<?> act = getClassFromName(clazzName);
             Object instance;
-            if( clazzName.startsWith("@Service:") ) {
-                clazzName = clazzName.substring(10);
-                act = getClassFromName(clazzName);
-                instance = (GroovyStringFactService)applicationContext.getBean(act);
+
+            if( act.isAnnotationPresent(Service.class) ) {
+                instance = applicationContext.getBean(act);
             } else{
-                act = getClassFromName(clazzName);
                 instance = act.newInstance();
             }
             return instance;

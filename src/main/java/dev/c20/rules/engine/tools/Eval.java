@@ -15,7 +15,8 @@ public class Eval {
 
     ClassLoader parent;
     GroovyClassLoader loader;
-    Map<String,GroovyObject> cache = new HashMap<>();
+
+    Map<String,GroovyCache> cache = new HashMap<>();
 
     static private Eval instance;
 
@@ -33,17 +34,37 @@ public class Eval {
 
     }
 
+    public GroovyCache loadToCache( String code, String expressionName, int hasSourceCode ) throws InstantiationException, IllegalAccessException {
+        Class groovyClass = null;
+        GroovyObject groovyObject = null;
+        cache.remove(expressionName);
+        groovyClass = loader.parseClass(code);
+        groovyObject = (GroovyObject)groovyClass.newInstance();
+        GroovyCache groovyCache = new GroovyCache();
+        groovyCache.setHashSource(hasSourceCode);
+        groovyCache.setInstance(groovyObject);
+        cache.put(expressionName,groovyCache);
+        log.info("Add cache for " +expressionName + "-" + hasSourceCode);
+        return groovyCache;
+    }
+
     public EvalResult run(String code, Object context, String expressionName ) {
 
         try {
-            Class groovyClass = null;
+            int hasCode = code.hashCode() ;
             GroovyObject groovyObject = null;
             if( expressionName.equalsIgnoreCase("nocache") || !cache.containsKey(expressionName) ) {
-                groovyClass = loader.parseClass(code);
-                groovyObject = (GroovyObject)groovyClass.newInstance();
-                cache.put(expressionName,groovyObject);
+                GroovyCache groovyCache = loadToCache(code,expressionName,hasCode);
+                groovyObject = groovyCache.getInstance();
+
             } else {
-                groovyObject = cache.get(expressionName);
+                log.info("get from cache:"+expressionName + "-" + hasCode);
+                GroovyCache groovyCache = cache.get(expressionName);
+                if( groovyCache.getHashSource() != hasCode ) {
+                    log.info("reload cache:"+expressionName + "-" + hasCode);
+                    groovyCache = loadToCache( code, expressionName, hasCode);
+                }
+                groovyObject = groovyCache.getInstance();
             }
 
             groovyObject.setProperty("context", context);

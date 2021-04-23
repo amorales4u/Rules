@@ -89,7 +89,7 @@ public class ReadDemoWorkflow implements CommandLineRunner {
             );
 
             for( Storage storageRule : rulesOfGroup ) {
-                log.info("rule (level)name: (" + storageRule.getLevel() + ")" +storageRule.getName() + " " + storageRule.getPath());
+                log.info("rule (level)[name]: (" + storageRule.getLevel() + ")[" +storageRule.getName() + "] " + storageRule.getPath());
                 Rule rule = rules.get(storageRule.getName());
                 String rulePath = PathUtils.getPathFromLevel(storageRule.getPath(),5);
                 group.addTreeRule(rulePath, rule);

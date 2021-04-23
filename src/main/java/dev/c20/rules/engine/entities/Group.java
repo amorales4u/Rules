@@ -77,7 +77,6 @@ public class Group implements Serializable {
         for( int i = 0; i < paths.length; i ++ ) {
             for (Rule parentRule : addIn) {
                 if (parentRule.getName().equals(paths[i])) {
-                    log.info("Found:" + parentRule.getName());
                     if( parentRule.getRules() == null ) {
                         parentRule.setRules(new ArrayList<>());
                     }

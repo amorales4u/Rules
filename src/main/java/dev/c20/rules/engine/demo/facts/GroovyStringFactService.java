@@ -13,7 +13,7 @@ import java.util.Map;
 @Slf4j
 public class GroovyStringFactService implements IFact   {
 
-    public EvaluateFactResponse execute(Rule rule, Fact fact, Object context, Map<String,Object> params ) {
+    public EvaluateFactResponse execute(Rule rule, Fact fact, Map<String,Object> context, Map<String,Object> params ) {
         EvaluateFactResponse result = new EvaluateFactResponse();
         result.setRuleEvaluated(rule.getName());
         result.setDescription(rule.getDescription());
