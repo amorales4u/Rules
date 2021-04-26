@@ -53,6 +53,10 @@ public class ConfigureDemoWorkflow implements CommandLineRunner {
         log.info(asString(resource));
 
         log.info("Creating business tree for persist");
+        log.info("/system/business/facts/");
+        log.info( "/system/business/rules/", "System rules");
+        log.info( "/system/business/groups/", "System Business Groups");
+
         businessRulesService.addTreeFact();
 
 

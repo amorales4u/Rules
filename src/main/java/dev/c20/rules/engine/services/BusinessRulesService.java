@@ -35,7 +35,6 @@ public class BusinessRulesService {
                 path += p + "/";
                 storage = storageRepository.getFolder(path);
                 if( storage != null ) {
-                    log.info("Path " + path + " already exists");
                     continue;
                 } else {
                     log.info("Creating folder Path " + path );
