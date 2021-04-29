@@ -87,8 +87,9 @@ public class RuleService {
             // mapping Rule context data to Fact parameters
             Map<String,Object> params = new HashMap<>();
             List<String> paramKeys = new ArrayList<String>(rule.getFact().getParameters().keySet());
-
+            String factParam = "";
             for( String paramKey : paramKeys) {
+                factParam +=
                 EvalResult paramResult = Eval.getInstance().run(rule.getFact().getParameters().get(paramKey),request.getContext(),"nocache");
                 if( paramResult.isError() ) {
                     params.put(paramKey, null);

@@ -92,6 +92,20 @@ public class ConfigureDemoWorkflow implements CommandLineRunner {
                 .clazzName("dev.c20.rules.engine.demo.facts.GroovyFactService") );
 
         businessRulesService.persistFact( new Fact()
+                .name("RestStorage")
+                .description("Manda un correo")
+                .addParameter("[")
+                .addParameter("context: null,")
+                .addParameter("service: null")
+                .addParameter("path: ''")
+                .addParameter("request: [")
+                .addParameter("path:null")
+                .addParameter("body:null")
+                .addParameter("]")
+                .addParameter("]")
+                .clazzName("dev.c20.rules.engine.demo.facts.GroovyFactService") );
+
+        businessRulesService.persistFact( new Fact()
                 .name("GotoCancelar")
                 .description("Manda la tarea a la carpeta de cancelar")
                 .clazzName("dev.c20.rules.engine.demo.facts.GroovyFactService") );
