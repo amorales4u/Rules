@@ -2,7 +2,11 @@ package dev.c20.rules.engine.demo;
 
 import dev.c20.rules.engine.entities.BusinessRules;
 import dev.c20.rules.engine.entities.MapRuleToFact;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
 public class WorkFlowBusiness {
 
     static private WorkFlowBusiness instance = null;
@@ -22,6 +26,11 @@ public class WorkFlowBusiness {
     }
 
     private WorkFlowBusiness() {
+
+        bussinessRules = new BusinessRules();
+    }
+
+    private WorkFlowBusiness(String json) {
 
         bussinessRules = new BusinessRules();
         bussinessRules

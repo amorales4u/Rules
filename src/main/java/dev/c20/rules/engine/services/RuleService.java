@@ -78,6 +78,7 @@ public class RuleService {
 
         for( Rule rule : businessRuleResponse.getRulesComplied() ) {
             String factName = rule.getFact().name();
+            log.info("Rule fire:" + rule.getName());
             Fact factToFire = FactsRegistered.getInstance().get(factName);
 
             if( factToFire == null ) {
@@ -87,9 +88,10 @@ public class RuleService {
             // mapping Rule context data to Fact parameters
             Map<String,Object> params = new HashMap<>();
             List<String> paramKeys = new ArrayList<String>(rule.getFact().getParameters().keySet());
-            String factParam = "";
+
+            String factParam = FactsRegistered.getInstance().get(factName).getParametersAsList();
+            log.warn("Fire Fact [" + rule.getFact().name() + "] param need :" + factParam);
             for( String paramKey : paramKeys) {
-                factParam +=
                 EvalResult paramResult = Eval.getInstance().run(rule.getFact().getParameters().get(paramKey),request.getContext(),"nocache");
                 if( paramResult.isError() ) {
                     params.put(paramKey, null);

@@ -1,15 +1,12 @@
 package dev.c20.rules;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import dev.c20.rules.engine.demo.WorkFlowBusiness;
 import dev.c20.rules.engine.entities.*;
 import dev.c20.rules.engine.services.BusinessRulesService;
-import dev.c20.rules.engine.storage.entities.Storage;
 import dev.c20.rules.engine.storage.repository.StorageRepository;
 import dev.c20.workflow.commons.tools.PathUtils;
-import dev.c20.workflow.commons.tools.StoragePathUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.io.Resource;
@@ -21,7 +18,6 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 
 @Component
 @Order(1)
@@ -43,6 +39,10 @@ public class ConfigureDemoWorkflow implements CommandLineRunner {
     }
 
 
+    @Value("business-path")
+    private String businessPath;
+
+
     @Autowired
     private BusinessRulesService businessRulesService;
 
@@ -53,19 +53,20 @@ public class ConfigureDemoWorkflow implements CommandLineRunner {
         log.info(asString(resource));
 
         log.info("Creating business tree for persist");
-        log.info("/system/business/facts/");
-        log.info( "/system/business/rules/", "System rules");
-        log.info( "/system/business/groups/", "System Business Groups");
+        log.info( businessPath+"facts/");
+        log.info( businessPath+"rules/", "System rules");
+        log.info( businessPath+"/groups/", "System Business Groups");
 
-        businessRulesService.addTreeFact();
+        businessRulesService.createBusinessRulesTree();
 
-
+        /*
         BusinessRules businessRules = WorkFlowBusiness.getInstance().getBussinessRules();
         ObjectMapper objectMapper = new ObjectMapper();
         log.info(objectMapper.writeValueAsString(businessRules));
 
         Group rulesGroup = businessRules.find("Por resolver");
         log.info(objectMapper.writeValueAsString(rulesGroup));
+        */
 
         businessRulesService.persistFact(new Fact()
                 .name("GoToAceptar")
@@ -142,11 +143,12 @@ public class ConfigureDemoWorkflow implements CommandLineRunner {
                         .addLine("context.email != null")
                         .exclusive(false)
                         .fact( new MapRuleToFact()
-                                .name("SendEmail")
-                                .addParameter("email","context.email")
-                                .addParameter("to", "context.to" )
-                                .addParameter("subject", "context.subject" )
-                                .addParameter("body", "context.body" )
+                                .name("RestStorage")
+                                .addParameter("context","/workflow")
+                                .addParameter("service","/storage")
+                                .addParameter("path","/list")
+                                .addParameter("request.path", "/system/business/facts/" )
+                                .addParameter("request.body", "context.body" )
                         )
                         );
         businessRulesService.persistRule(new Rule()
@@ -182,7 +184,7 @@ public class ConfigureDemoWorkflow implements CommandLineRunner {
         );
 
 
-        businessRulesService.setRulesForGroup( "/system/business/groups/Por resolver/",
+        businessRulesService.setRulesForGroup( businessPath + "groups/Por resolver/",
             "Enviar tarea a Aceptar",
             "Enviar tarea a Aceptar/Es aceptada y tiene definido un email",
             "Enviar tarea a Aceptar/Es aceptada y NO tiene email",
@@ -191,7 +193,7 @@ public class ConfigureDemoWorkflow implements CommandLineRunner {
 
 
         );
-
+        /*
         List<Storage> dir = storageRepository.dir(
                 new StoragePathUtil("/system/business/groups/Por resolver/")
                         .setShowFolders(false)
@@ -201,7 +203,7 @@ public class ConfigureDemoWorkflow implements CommandLineRunner {
         for( Storage storage : dir ) {
             log.info(storage.getPath());
         }
-        /*
+
         FactsRegistered.getInstance().register( new Fact()
                 .name("GoToAceptar")
                 .description("Mueve la tarea a la carpeta de Aceptar")

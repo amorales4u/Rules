@@ -1,5 +1,6 @@
 package dev.c20.rules;
 
+import dev.c20.rules.engine.demo.WorkFlowBusiness;
 import dev.c20.rules.engine.entities.Fact;
 import dev.c20.rules.engine.entities.Group;
 import dev.c20.rules.engine.entities.Rule;
@@ -11,6 +12,7 @@ import dev.c20.workflow.commons.tools.PathUtils;
 import dev.c20.workflow.commons.tools.StoragePathUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.io.Resource;
@@ -34,8 +36,12 @@ public class ReadDemoWorkflow implements CommandLineRunner {
     @Autowired
     private BusinessRulesService businessRulesService;
 
+    @Value("business-path")
+    private String businessPath;
+
     @Override
     public void run(String... args) throws Exception {
+
 
         log.info("Load Business Rules for DEMO");
         log.info("Load FACTS");
@@ -44,19 +50,20 @@ public class ReadDemoWorkflow implements CommandLineRunner {
         //createTreeFolders( "/system/business/groups/", "System Business Groups");
 
         List<Storage> storageList = storageRepository.dir(
-                new StoragePathUtil("/system/business/facts/")
+                new StoragePathUtil(businessPath + "facts/")
                 .setRecursive(true)
                 .setShowFiles(true)
                 .setShowFolders(false) );
 
         for( Storage storage : storageList ) {
             Fact fact = businessRulesService.readFactFromStorage(storage);
+            log.warn( "Fact:" + fact.name() );
             FactsRegistered.getInstance().register(fact);
         }
 
         // read rules for construct group business rule
         storageList = storageRepository.dir(
-                new StoragePathUtil("/system/business/rules/")
+                new StoragePathUtil(businessPath + "rules/")
                         .setRecursive(true)
                         .setShowFiles(true)
                         .setShowFolders(false) );
@@ -64,25 +71,26 @@ public class ReadDemoWorkflow implements CommandLineRunner {
         Map<String,Rule> rules = new HashMap<>();
         for( Storage storage : storageList ) {
             Rule rule = businessRulesService.readRuleFromStorage(storage);
-            log.warn( "s)Rule:" + storage.getName() );
-            log.warn( "r)Rule:" + rule.getName() );
+            log.warn( "Rule:" + rule.getName() );
             rules.put(rule.getName(), rule);
         }
 
-        // read all groups
+        // read all groups of busines rules for 'business'
         storageList = storageRepository.dir(
-                new StoragePathUtil("/system/business/groups/")
+                new StoragePathUtil(businessPath + "groups/")
                         .setRecursive(false)
                         .setShowFiles(false)
                         .setShowFolders(true)
         );
+
+        Map<String,Group> allGroups = new HashMap<>();
 
         for( Storage storage : storageList ) {
             log.info("Group:" + storage.getName() );
             Group group = businessRulesService.readGroupFromStorage(storage);
 
             List<Storage> rulesOfGroup = storageRepository.dir(
-                    new StoragePathUtil("/system/business/groups/" + storage.getName() + "/")
+                    new StoragePathUtil(businessPath + "groups/" + storage.getName() + "/")
                             .setRecursive(true)
                             .setShowFiles(false)
                             .setShowFolders(true)
@@ -95,12 +103,26 @@ public class ReadDemoWorkflow implements CommandLineRunner {
                 group.addTreeRule(rulePath, rule);
 
             }
-
+            //WorkFlowBusiness.getInstance().getBussinessRules()
             log.info("Group configured:" + group.getName());
+            allGroups.put(group.getName(),group);
 
         }
 
-    }
+        // read all groups of busines rules for 'Reglas para Solicitudes'
+        storageList = storageRepository.dir(
+                new StoragePathUtil("/system/business/busines-rules/Reglas para Solicitudes/")
+                        .setRecursive(true)
+                        .setShowFiles(false)
+                        .setShowFolders(true)
+        );
+
+        for( Storage storage : storageList ) {
+            log.info("Business Rules:" + storage.getName());
+        }
+
+
+        }
     static public void main(String[] args ) {
         System.out.println("path:/system/SendFiles" );
         System.out.println("name:" + PathUtils.getName("/system/SendFiles") );

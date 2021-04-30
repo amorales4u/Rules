@@ -1,6 +1,7 @@
 package dev.c20.rules.engine.entities;
 
 import dev.c20.rules.engine.demo.facts.GroovyStringFactService;
+import dev.c20.workflow.commons.tools.StringUtils;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -24,6 +25,10 @@ public class Fact {
     public Fact addParameter(String target ) {
         parameters.add(target);
         return this;
+    }
+
+    public String getParametersAsList() {
+        return StringUtils.listAsString(parameters,"\n");
     }
 
 }
