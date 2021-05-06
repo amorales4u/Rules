@@ -44,7 +44,7 @@ public class Eval {
         groovyCache.setHashSource(hasSourceCode);
         groovyCache.setInstance(groovyObject);
         cache.put(expressionName,groovyCache);
-        log.info("Add cache for " +expressionName + "-" + hasSourceCode);
+        log.info("Add cache for [" +expressionName + "] " + hasSourceCode);
         return groovyCache;
     }
 
