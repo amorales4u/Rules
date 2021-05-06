@@ -24,6 +24,8 @@ public class WorkFlowBusiness {
     private WorkFlowBusiness() {
 
         bussinessRules = new BusinessRules();
+    }
+    private WorkFlowBusiness(String algo) {
         bussinessRules
                 .name("Reglas de solicitudes")
 

@@ -1,5 +1,6 @@
 package dev.c20.rules;
 
+import dev.c20.rules.engine.demo.WorkFlowBusiness;
 import dev.c20.rules.engine.entities.Fact;
 import dev.c20.rules.engine.entities.Group;
 import dev.c20.rules.engine.entities.Rule;
@@ -98,7 +99,11 @@ public class ReadDemoWorkflow implements CommandLineRunner {
 
             log.info("Group configured:" + group.getName());
 
+            WorkFlowBusiness.getInstance().getBussinessRules().getRulesGroups().add(group);
+
         }
+
+        WorkFlowBusiness.getInstance().getBussinessRules().name("Reglas de ejemplo");
 
     }
     static public void main(String[] args ) {

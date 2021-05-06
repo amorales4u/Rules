@@ -11,6 +11,7 @@ import dev.c20.rules.engine.services.entities.BusinessRuleResponse;
 import dev.c20.rules.engine.services.entities.EvaluateFactResponse;
 import dev.c20.rules.engine.tools.Eval;
 import dev.c20.rules.engine.tools.EvalResult;
+import dev.c20.workflow.commons.tools.StringUtils;
 import groovy.text.SimpleTemplateEngine;
 import groovy.text.Template;
 import lombok.extern.slf4j.Slf4j;
@@ -87,21 +88,36 @@ public class RuleService {
             // mapping Rule context data to Fact parameters
             Map<String,Object> params = new HashMap<>();
             List<String> paramKeys = new ArrayList<String>(rule.getFact().getParameters().keySet());
-            String factParam = "";
+            String ruleSetFactParams = "\n";
+
+            log.warn("Fact to fire parameters definition:" + rule.getFact().name());
+            log.warn("\n" + StringUtils.collectionAsString(factToFire.parameters(),"\n"));
+
             for( String paramKey : paramKeys) {
-                factParam +=
-                EvalResult paramResult = Eval.getInstance().run(rule.getFact().getParameters().get(paramKey),request.getContext(),"nocache");
-                if( paramResult.isError() ) {
-                    params.put(paramKey, null);
-                    log.error(paramKey + "=>" + paramResult.getErrorMessage());
-                } else {
-                    params.put(paramKey, paramResult.getResult());
-                }
+                ruleSetFactParams += paramKey + " = " + rule.getFact().getParameters().get(paramKey) + "\n";
+
+            }
+            log.warn("MapRuleToFact:");
+            log.warn(ruleSetFactParams);
+
+            log.warn("Eval Expression:Fact to fire parameters definition");
+            EvalResult paramDefinition = Eval.getInstance().run(StringUtils.collectionAsString(factToFire.parameters(),"\n"),request.getContext(),"nocache");
+            // add param var to context
+            log.warn("Eval Expression:MapRuleToFact");
+            request.getContext().put("param", paramDefinition.getResult());
+            EvalResult paramResult = Eval.getInstance().run(ruleSetFactParams,request.getContext(),"nocache");
+            if( paramResult.isError() ) {
+                log.error( paramResult.getErrorMessage());
             }
             if( factToFire.instance() == null ) {
                 factToFire.instance( getInstance(factToFire.clazzName()));
             }
+            params = (Map<String,Object>)request.getContext().get("param");
+            // remove param from context for other calls, clean
+            request.getContext().remove("param");
+
             responses.add( ((IFact)factToFire.instance()).execute(rule, factToFire,request.getContext(), params) );
+
 
         }
 
