@@ -95,8 +95,8 @@ public class RuleService {
 
             for( String paramKey : paramKeys) {
                 ruleSetFactParams += paramKey + " = " + rule.getFact().getParameters().get(paramKey) + "\n";
-
             }
+
             log.warn("MapRuleToFact:");
             log.warn(ruleSetFactParams);
 
