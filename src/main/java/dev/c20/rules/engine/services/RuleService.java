@@ -116,7 +116,11 @@ public class RuleService {
             // remove param from context for other calls, clean
             request.getContext().remove("param");
 
-            responses.add( ((IFact)factToFire.instance()).execute(rule, factToFire,request.getContext(), params) );
+            EvaluateFactResponse factResponse = ((IFact)factToFire.instance()).execute(rule, factToFire,request.getContext(), params);
+            if( businessEvalRuleResponse.isCorrectlyFactsEvaluated() && !factResponse.isEvaluatedCorrectly() ) {
+                businessEvalRuleResponse.setCorrectlyFactsEvaluated(false);
+            }
+            responses.add( factResponse );
 
 
         }
