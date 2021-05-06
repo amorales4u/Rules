@@ -57,7 +57,7 @@ public class ConfigureDemoWorkflow implements CommandLineRunner {
         log.info( "/system/business/rules/", "System rules");
         log.info( "/system/business/groups/", "System Business Groups");
 
-        businessRulesService.addTreeFact();
+        businessRulesService.createBusinessRulesTree();
 
 
         BusinessRules businessRules = WorkFlowBusiness.getInstance().getBussinessRules();
