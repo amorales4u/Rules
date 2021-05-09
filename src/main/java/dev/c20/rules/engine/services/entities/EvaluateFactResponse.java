@@ -6,7 +6,7 @@ import lombok.Setter;
 @Setter
 @Getter
 public class EvaluateFactResponse {
-    boolean evaluatedCorrectly;
+    boolean correctlyEvaluated;
     String evaluationError;
     String ruleEvaluated;
     String description;

@@ -1,11 +1,10 @@
 package dev.c20.rules;
 
-import dev.c20.rules.engine.demo.WorkFlowBusiness;
 import dev.c20.rules.engine.entities.Fact;
 import dev.c20.rules.engine.entities.Group;
 import dev.c20.rules.engine.entities.Rule;
-import dev.c20.rules.engine.services.BusinessRulesService;
-import dev.c20.rules.engine.services.FactsRegistered;
+import dev.c20.rules.engine.services.BusinessStorageService;
+import dev.c20.rules.engine.services.RulesAndFactsRegistered;
 import dev.c20.rules.engine.storage.entities.Storage;
 import dev.c20.rules.engine.storage.repository.StorageRepository;
 import dev.c20.workflow.commons.tools.PathUtils;
@@ -17,9 +16,8 @@ import org.springframework.core.annotation.Order;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 @Component
 @Order(2)
@@ -33,16 +31,13 @@ public class ReadDemoWorkflow implements CommandLineRunner {
     StorageRepository storageRepository;
 
     @Autowired
-    private BusinessRulesService businessRulesService;
+    private BusinessStorageService businessStorageService;
 
     @Override
     public void run(String... args) throws Exception {
 
         log.info("Load Business Rules for DEMO");
         log.info("Load FACTS");
-        //createTreeFolders( "/system/business/facts/", "System facts for rules");
-        //createTreeFolders( "/system/business/rules/", "System rules");
-        //createTreeFolders( "/system/business/groups/", "System Business Groups");
 
         List<Storage> storageList = storageRepository.dir(
                 new StoragePathUtil("/system/business/facts/")
@@ -51,26 +46,28 @@ public class ReadDemoWorkflow implements CommandLineRunner {
                 .setShowFolders(false) );
 
         for( Storage storage : storageList ) {
-            Fact fact = businessRulesService.readFactFromStorage(storage);
-            FactsRegistered.getInstance().register(fact);
+            Fact fact = businessStorageService.readFactFromStorage(storage);
+            RulesAndFactsRegistered.getInstance().register(fact);
+            log.info("Setting up Fact:" + fact.getName());
         }
 
+
         // read rules for construct group business rule
+        log.info("Load RULES");
         storageList = storageRepository.dir(
                 new StoragePathUtil("/system/business/rules/")
                         .setRecursive(true)
                         .setShowFiles(true)
                         .setShowFolders(false) );
 
-        Map<String,Rule> rules = new HashMap<>();
         for( Storage storage : storageList ) {
-            Rule rule = businessRulesService.readRuleFromStorage(storage);
-            log.warn( "s)Rule:" + storage.getName() );
-            log.warn( "r)Rule:" + rule.getName() );
-            rules.put(rule.getName(), rule);
+            Rule rule = businessStorageService.readRuleFromStorage(storage);
+            RulesAndFactsRegistered.getInstance().register(rule);
+            log.warn( "Setting up Rule:" + rule.getName() );
         }
 
         // read all groups
+        log.info("Load GROUPS of RULES");
         storageList = storageRepository.dir(
                 new StoragePathUtil("/system/business/groups/")
                         .setRecursive(false)
@@ -79,8 +76,8 @@ public class ReadDemoWorkflow implements CommandLineRunner {
         );
 
         for( Storage storage : storageList ) {
-            log.info("Group:" + storage.getName() );
-            Group group = businessRulesService.readGroupFromStorage(storage);
+            log.info("Setting up Group:  " + storage.getName() );
+            Group group = businessStorageService.readGroupFromStorage(storage);
 
             List<Storage> rulesOfGroup = storageRepository.dir(
                     new StoragePathUtil("/system/business/groups/" + storage.getName() + "/")
@@ -88,22 +85,26 @@ public class ReadDemoWorkflow implements CommandLineRunner {
                             .setShowFiles(false)
                             .setShowFolders(true)
             );
-
+            if( rulesOfGroup.size() == 0 ) {
+                log.warn("Group " + group.getName() + " without configuration");
+                group.setConfigured(false);
+            }
             for( Storage storageRule : rulesOfGroup ) {
-                log.info("rule (level)[name]: (" + storageRule.getLevel() + ")[" +storageRule.getName() + "] " + storageRule.getPath());
-                Rule rule = rules.get(storageRule.getName());
+                int level = storageRule.getLevel() - 3;
+                String divisor = level > 1 ? "+" : "";
+                log.info("Rule               " + ( String.join("", Collections.nCopies(level,   "|------" ) )  +storageRule.getName() ));
+                Rule rule = RulesAndFactsRegistered.getInstance().getRule(storageRule.getName());
                 String rulePath = PathUtils.getPathFromLevel(storageRule.getPath(),5);
                 group.addTreeRule(rulePath, rule);
 
             }
+            group.setConfigured(true);
+            log.info("Group configured:  " + group.getName());
 
-            log.info("Group configured:" + group.getName());
-
-            WorkFlowBusiness.getInstance().getBussinessRules().getRulesGroups().add(group);
+            RulesAndFactsRegistered.getInstance().register(group);
 
         }
 
-        WorkFlowBusiness.getInstance().getBussinessRules().name("Reglas de ejemplo");
 
     }
     static public void main(String[] args ) {

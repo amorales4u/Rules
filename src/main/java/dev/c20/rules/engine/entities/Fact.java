@@ -2,6 +2,7 @@ package dev.c20.rules.engine.entities;
 
 import dev.c20.rules.engine.demo.facts.GroovyStringFactService;
 import dev.c20.workflow.commons.tools.StringUtils;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -11,12 +12,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Accessors(fluent = true) @Getter @Setter
+
+@Accessors( chain = true)
+@Getter
+@Setter
 public class Fact {
 
     private String name;
-    private String category;
     private String description;
+    private String path;
     private String clazzName;
     private Object instance;
 

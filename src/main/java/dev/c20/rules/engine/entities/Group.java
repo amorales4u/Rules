@@ -3,14 +3,17 @@ package dev.c20.rules.engine.entities;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import dev.c20.workflow.commons.tools.PathUtils;
 import lombok.AccessLevel;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+@Accessors( chain = true)
 @Getter
 @Setter
 @Slf4j
@@ -20,6 +23,8 @@ public class Group implements Serializable {
     String description;
     String factNotFound = null;
     String factNotFoundMessage = null;
+    String path;
+    boolean configured = false;
     List<Rule> rules = null;
 
 

@@ -2,20 +2,23 @@ package dev.c20.rules.engine.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AccessLevel;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.Accessors;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-
+@Accessors( chain = true)
 @Getter
 @Setter
 public class Rule  implements Serializable {
 
     String name;
     String description;
+    String path;
     MapRuleToFact fact;
     boolean exclusive = true;
 

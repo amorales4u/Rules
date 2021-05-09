@@ -19,11 +19,11 @@ import java.util.List;
 
 @Slf4j
 @Service
-public class BusinessRulesService {
+public class BusinessStorageService {
     @Autowired
     StorageRepository storageRepository;
 
-    @org.springframework.beans.factory.annotation.Value("business-path")
+    @org.springframework.beans.factory.annotation.Value("${business-path}")
     private String businessPath;
 
     @Autowired
@@ -62,10 +62,7 @@ public class BusinessRulesService {
 
     }
     public Storage persistFact(Fact fact) {
-        String path = businessPath + "facts/" + ( fact.category() != null ? fact.category() + "/" : "" )  + fact.name();
-        if( fact.category() != null ) {
-            createTreeFolders( path, "Fact category " + fact.category());
-        }
+        String path = fact.getPath() + fact.getName();
 
         Storage storage = storageRepository.getFile(path);
 
@@ -76,17 +73,25 @@ public class BusinessRulesService {
         } else {
             log.info("Fact found (update):" + path);
         }
-        storage.setDescription(fact.description());
-        storage.setClazzName(fact.clazzName());
+        storage.setDescription(fact.getDescription());
+        storage.setClazzName(fact.getClazzName());
+        storage.setImage("fact");
         storageRepository.save(storage);
 
         valueRepository.deleteAll( storage );
 
         int idx = 0;
-        for( String param : fact.parameters() ) {
+        String strIdx = "";
+        for( String param : fact.getParameters() ) {
+            idx++;
+            if( idx < 9 ) {
+                strIdx = "0" + idx;
+            } else {
+                strIdx = idx + "";
+            }
             Value value = new Value();
             value.setParent(storage);
-            value.setName("param." + idx++);
+            value.setName("param." + strIdx);
             value.setValue(param);
             valueRepository.save(value);
         }
@@ -101,9 +106,10 @@ public class BusinessRulesService {
         Fact fact = new Fact();
         List<Value> values = valueRepository.getAll(storage);
 
-        fact.name(storage.getName())
-                .category( PathUtils.getPathPart( storage.getPath(), PathUtils.getPathLevel(storage.getPath())))
-                .clazzName(storage.getClazzName());
+        fact.setName(storage.getName())
+                .setPath(storage.getPath())
+                .setClazzName(storage.getClazzName())
+                ;
         for( Value value : values ) {
             if( value.getName().startsWith("param."))
                 fact.addParameter(value.getValue());
@@ -113,7 +119,7 @@ public class BusinessRulesService {
 
     }
 
-    public Fact radFact(String factName, String factCategory){
+    public Fact readFact(String factName, String factCategory){
         String path = businessPath + "facts/" + ( factCategory != null ? factCategory + "/" : "" )  + factName;
 
         Storage storage = storageRepository.getFile(path);
@@ -123,7 +129,7 @@ public class BusinessRulesService {
     }
 
     public Storage persistGroup(Group group) {
-        String path = businessPath + "groups/" + group.getName() + "/";
+        String path = group.getPath()  + group.getName() + "/";
 
 
         Storage storage = storageRepository.getFolder(path);
@@ -137,6 +143,7 @@ public class BusinessRulesService {
         }
         storage.setClazzName(group.getClass().getName());
         storage.setDescription(group.getDescription());
+        storage.setImage("group");
         storageRepository.save(storage);
 
         valueRepository.deleteAll( storage );
@@ -160,16 +167,17 @@ public class BusinessRulesService {
             return null;
         }
         Group group = new Group();
-        group.setName(storage.getName());
-        group.setDescription(storage.getDescription());
+        group.name(storage.getName());
+        group.setPath(storage.getPath());
+        group.description(storage.getDescription());
 
         List<Value> values = valueRepository.getAll(storage);
 
         for( Value value : values ) {
             if( value.getName().equals( "factNotFound") ) {
-                group.setFactNotFound( value.getValue() );
+                group.factNotFound( value.getValue() );
             } else if( value.getName().equals( "factNotFoundMessage") ) {
-                group.setFactNotFoundMessage(value.getValue());
+                group.factNotFoundMessage(value.getValue());
             }
 
         }
@@ -202,6 +210,7 @@ public class BusinessRulesService {
         storage.setClazzName(rule.getClass().getName());
         storage.setDescription(rule.getDescription());
         storage.setVisible(rule.isExclusive());
+        storage.setImage("rule");
         storageRepository.save(storage);
 
         valueRepository.deleteAll( storage );
@@ -241,12 +250,11 @@ public class BusinessRulesService {
         if( storage == null ) {
             log.info("Rule not found");
             return null;
-        } else {
-            log.info("Rule found:" + storage.getPath() );
         }
         Rule rule = new Rule();
         rule.setName(storage.getName());
         rule.setDescription(storage.getDescription());
+        rule.setPath(storage.getPath());
         rule.setExclusive( storage.getVisible() );
 
         List<Value> values = valueRepository.getAll(storage);

@@ -8,6 +8,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+@Accessors( chain = true)
 @Getter
 @Setter
 public class MapRuleToFact implements Serializable {

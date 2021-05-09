@@ -6,6 +6,8 @@ import dev.c20.rules.engine.services.entities.BusinessRuleResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
+
 @RestController
 public class RuleRestController {
 
@@ -18,13 +20,15 @@ public class RuleRestController {
     }
 
     @PostMapping("/evaluate")
-    public BusinessRuleResponse evalBusinessRule(@RequestBody RuleRequest request) {
-        return ruleService.evalBusinessRule(request);
+    public BusinessRuleResponse evalBusinessRule(@RequestBody RuleRequest request, HttpServletRequest httpRequest) {
+        return ruleService.setHttpRequest(httpRequest)
+            .evalBusinessRule(request);
     }
 
     @PostMapping("/evaluate-and-fire")
-    public BusinessEvalRuleResponse evalAndFireBusinessRule(@RequestBody RuleRequest request) {
-        return ruleService.evalAndFireBusinessRule(request);
+    public BusinessEvalRuleResponse evalAndFireBusinessRule(@RequestBody RuleRequest request, HttpServletRequest httpRequest) {
+        return ruleService.setHttpRequest(httpRequest)
+                .evalAndFireBusinessRule(request);
     }
 
 

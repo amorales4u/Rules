@@ -1,7 +1,5 @@
 package dev.c20.rules.engine.services;
 
-import dev.c20.rules.engine.demo.WorkFlowBusiness;
-import dev.c20.rules.engine.demo.facts.GroovyStringFactService;
 import dev.c20.rules.engine.entities.Fact;
 import dev.c20.rules.engine.entities.IFact;
 import dev.c20.rules.engine.entities.Rule;
@@ -19,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 
 @Slf4j
@@ -29,10 +28,17 @@ public class RuleService {
     @Autowired
     ApplicationContext applicationContext;
 
+    HttpServletRequest httpServletRequest;
+
+    public RuleService setHttpRequest( HttpServletRequest httpServletRequest ) {
+        this.httpServletRequest = httpServletRequest;
+        return this;
+    }
+
+
     public Class<?> getClassFromName(String clazzName) {
         try {
-            Class<?> act = Class.forName(clazzName);
-            return act;
+            return  Class.forName(clazzName);
         } catch (ClassNotFoundException e) {
             log.error("Class not found " + clazzName,e);
         }
@@ -79,46 +85,45 @@ public class RuleService {
 
         for( Rule rule : businessRuleResponse.getRulesComplied() ) {
             String factName = rule.getFact().name();
-            Fact factToFire = FactsRegistered.getInstance().get(factName);
+            Fact factToFire = RulesAndFactsRegistered.getInstance().getFact(factName);
 
             if( factToFire == null ) {
                 throw new RuntimeException("Fact named [" + factName + " => " + rule.getName() + "] not exists");
             }
 
             // mapping Rule context data to Fact parameters
-            Map<String,Object> params = new HashMap<>();
-            List<String> paramKeys = new ArrayList<String>(rule.getFact().getParameters().keySet());
-            String ruleSetFactParams = "\n";
+            List<String> paramKeys = new ArrayList<>(rule.getFact().getParameters().keySet());
+            StringBuilder ruleSetFactParams = new StringBuilder("\n");
 
             log.warn("Fact to fire parameters definition:" + rule.getFact().name());
-            log.warn("\n" + StringUtils.collectionAsString(factToFire.parameters(),"\n"));
+            log.warn("\n" + StringUtils.collectionAsString(factToFire.getParameters(),"\n"));
 
             for( String paramKey : paramKeys) {
-                ruleSetFactParams += paramKey + " = " + rule.getFact().getParameters().get(paramKey) + "\n";
+                ruleSetFactParams.append(paramKey).append(" = ").append(rule.getFact().getParameters().get(paramKey)).append("\n");
             }
 
             log.warn("MapRuleToFact:");
-            log.warn(ruleSetFactParams);
+            log.warn(ruleSetFactParams.toString());
 
             log.warn("Eval Expression:Fact to fire parameters definition");
-            EvalResult paramDefinition = Eval.getInstance().run(StringUtils.collectionAsString(factToFire.parameters(),"\n"),request.getContext(),"nocache");
+            EvalResult paramDefinition = Eval.getInstance().run(StringUtils.collectionAsString(factToFire.getParameters(),"\n"),request.getContext(),"nocache");
             // add param var to context
             log.warn("Eval Expression:MapRuleToFact");
             request.getContext().put("param", paramDefinition.getResult());
-            EvalResult paramResult = Eval.getInstance().run(ruleSetFactParams,request.getContext(),"nocache");
+            EvalResult paramResult = Eval.getInstance().run(ruleSetFactParams.toString(),request.getContext(),"nocache");
             if( paramResult.isError() ) {
                 log.error( paramResult.getErrorMessage());
             }
-            if( factToFire.instance() == null ) {
-                factToFire.instance( getInstance(factToFire.clazzName()));
+            if( factToFire.getInstance() == null ) {
+                factToFire.setInstance( getInstance(factToFire.getClazzName()));
             }
-            params = (Map<String,Object>)request.getContext().get("param");
+            Map<String,Object> params = (Map<String,Object>)request.getContext().get("param");
             // remove param from context for other calls, clean
             request.getContext().remove("param");
 
-            EvaluateFactResponse factResponse = ((IFact)factToFire.instance()).execute(rule, factToFire,request.getContext(), params);
-            if( businessEvalRuleResponse.isCorrectlyFactsEvaluated() && !factResponse.isEvaluatedCorrectly() ) {
-                businessEvalRuleResponse.setCorrectlyFactsEvaluated(false);
+            EvaluateFactResponse factResponse = ((IFact)factToFire.getInstance()).execute(rule, factToFire,request.getContext(), params);
+            if( businessEvalRuleResponse.isFactsEvaluatedCorrectly() && !factResponse.isCorrectlyEvaluated() ) {
+                businessEvalRuleResponse.setFactsEvaluatedCorrectly(false);
             }
             responses.add( factResponse );
 
@@ -132,7 +137,7 @@ public class RuleService {
 
     public BusinessRuleResponse evalBusinessRule(RuleRequest request) {
         BusinessRuleResponse businessRuleResponse = new BusinessRuleResponse();
-        Group rulesGroup = WorkFlowBusiness.getInstance().getBussinessRules().find(request.getRuleGroupName());
+        Group rulesGroup = RulesAndFactsRegistered.getInstance().getGroup(request.getRuleGroupName());
 
         if( rulesGroup == null ) {
             businessRuleResponse.setRuleGroupFound(false);

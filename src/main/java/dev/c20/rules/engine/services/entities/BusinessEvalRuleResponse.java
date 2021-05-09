@@ -11,7 +11,7 @@ public class BusinessEvalRuleResponse {
 
     private boolean ruleGroupFound;
     private boolean complied;
-    private boolean correctlyFactsEvaluated = true;
+    private boolean factsEvaluatedCorrectly = true;
     private String factNotFoundMessage;
     private String ruleGroupEvaluated;
     private List<EvaluateFactResponse> rulesEvaluated;

@@ -26,7 +26,7 @@ public class GroovyFactService implements IFact {
     DataRepository dataRepository;
 
     public EvaluateFactResponse execute(Rule rule, Fact fact, Map<String,Object> context, Map<String,Object> params) {
-        String factToDo = dataRepository.getDataOf("/system/business/facts/" + fact.name());
+        String factToDo = dataRepository.getDataOf("/system/business/facts/" + fact.getName());
         EvaluateFactResponse result = new EvaluateFactResponse();
         result.setRuleEvaluated(rule.getName());
         result.setFact(rule.getFact().getName());
@@ -38,18 +38,18 @@ public class GroovyFactService implements IFact {
         context.put("dataSource", dataSource);
 
         if( factToDo == null ) {
-            result.setEvaluatedCorrectly(false);
-            result.setEvaluationError( "Fact " + fact.name() + " has not implementation" );
+            result.setCorrectlyEvaluated(false);
+            result.setEvaluationError( "Fact " + fact.getName() + " has not implementation" );
             return result;
         }
 
-        EvalResult evalResult = Eval.getInstance().run(factToDo,context,fact.name());
+        EvalResult evalResult = Eval.getInstance().run(factToDo,context,fact.getName());
         if( evalResult.isError() ) {
-            result.setEvaluatedCorrectly(false);
+            result.setCorrectlyEvaluated(false);
             result.setEvaluationError(evalResult.getErrorMessage());
             return result;
         }
-        result.setEvaluatedCorrectly(true);
+        result.setCorrectlyEvaluated(true);
         result.setResult(evalResult.getResult());
 
         return result;
