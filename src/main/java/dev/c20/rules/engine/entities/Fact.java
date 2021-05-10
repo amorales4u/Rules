@@ -7,10 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 @Accessors( chain = true)
@@ -23,8 +20,14 @@ public class Fact {
     private String path;
     private String clazzName;
     private Object instance;
+    Map<String,String> properties = new LinkedHashMap<>();
 
     List<String> parameters = new ArrayList<>();
+
+    public Fact addProperty(String name, String value ) {
+        properties.put(name,value);
+        return this;
+    }
 
     public Fact addParameter(String target ) {
         parameters.add(target);

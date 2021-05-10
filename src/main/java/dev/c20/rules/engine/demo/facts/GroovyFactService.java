@@ -26,6 +26,7 @@ public class GroovyFactService implements IFact {
     DataRepository dataRepository;
 
     public EvaluateFactResponse execute(Rule rule, Fact fact, Map<String,Object> context, Map<String,Object> params) {
+        log.info( "source from:" + fact.getProperties().get("source") );
         String factToDo = dataRepository.getDataOf("/system/business/facts/" + fact.getName());
         EvaluateFactResponse result = new EvaluateFactResponse();
         result.setRuleEvaluated(rule.getName());

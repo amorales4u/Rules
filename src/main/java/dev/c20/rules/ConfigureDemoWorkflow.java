@@ -112,7 +112,14 @@ public class ConfigureDemoWorkflow implements CommandLineRunner {
                 .addParameter("body:null")
                 .addParameter("]")
                 .addParameter("]")
-                .setClazzName("dev.c20.rules.engine.demo.facts.GroovyFactService") );
+                .setClazzName("dev.c20.rules.engine.demo.facts.GroovyFactService")
+                .addProperty("source", "resource")
+                .addProperty("source", "file")
+                .addProperty("source", "rest")
+                .addProperty("source", "data")
+                .addProperty("resource", "c:/file.groovy")
+                .addProperty("resource", "/Workflow/storage/data"+factsPath+"RestStorage")
+        );
 
         businessStorageService.persistFact( new Fact()
                 .setName("GotoCancelar")

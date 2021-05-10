@@ -79,7 +79,7 @@ public class BusinessStorageService {
         storageRepository.save(storage);
 
         valueRepository.deleteAll( storage );
-
+        List<Value> values = new ArrayList<>();
         int idx = 0;
         String strIdx = "";
         for( String param : fact.getParameters() ) {
@@ -93,8 +93,18 @@ public class BusinessStorageService {
             value.setParent(storage);
             value.setName("param." + strIdx);
             value.setValue(param);
-            valueRepository.save(value);
+            values.add(value);
         }
+
+        for( String key : fact.getProperties().keySet() ) {
+            Value value = new Value();
+            value.setParent(storage);
+            value.setName(key);
+            value.setValue(fact.getProperties().get(key));
+            values.add(value);
+        }
+
+        valueRepository.saveAll(values);
 
         return null;
     }
@@ -113,6 +123,8 @@ public class BusinessStorageService {
         for( Value value : values ) {
             if( value.getName().startsWith("param."))
                 fact.addParameter(value.getValue());
+            else 
+                fact.addProperty(value.getName(),value.getValue());
         }
 
         return fact;
