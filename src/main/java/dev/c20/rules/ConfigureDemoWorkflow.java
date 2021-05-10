@@ -170,7 +170,7 @@ public class ConfigureDemoWorkflow implements CommandLineRunner {
                                 .addParameter("context.param.service", "'storage/list'" )
                                 .addParameter("context.param.path", "null" )
                                 .addParameter("context.param.request.path", "'/system/business/facts/'" )
-                                .addParameter("context.param.request.body", "context.body" )
+                                .addParameter("context.param.request.body", "context.email" )
                         )
                         );
         businessStorageService.persistRule(new Rule()

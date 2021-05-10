@@ -35,6 +35,8 @@ public class GroovyFactService implements IFact {
 
         log.info("Fact params:");
         log.info(params.toString());
+        log.info("Fact context:");
+        log.info(params.toString());
 
         context.put("dataSource", dataSource);
 

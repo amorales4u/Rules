@@ -159,6 +159,8 @@ public class RuleService {
 
     public List<Rule> evalBusinessRule(Group rulesGroup, Map<String,Object> context) {
         List<Rule> facts = new ArrayList<>();
+        log.info("Eval busines rules group:" + rulesGroup.getName());
+        log.info(context.toString());
         for( Rule rule : rulesGroup.getRules() ) {
             String fact = evalRule( facts, rule, context, 0);
             if( fact != null )
@@ -172,7 +174,7 @@ public class RuleService {
     public String evalRule(List<Rule> facts, Rule rule, Map<String,Object> context, int level) {
         EvalResult evalResult = Eval.getInstance().run(rule.getExpression(), context, rule.getName() );
         boolean result = (boolean)evalResult.getResult();
-        log.info("Eval expression rule (in level " + level + " ):" + rule.getName() + " => " + result);
+        log.info("Eval expression rule (in level " + level + " ):" + rule.getName() + " => " + rule.getExpression() + " => " + result);
 
         if( rule.getRules() != null && rule.getRules().size() > 0 && result ) {
             for( Rule childRule : rule.getRules()) {
