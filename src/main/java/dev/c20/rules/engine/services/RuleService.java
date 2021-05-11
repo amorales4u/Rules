@@ -7,6 +7,7 @@ import dev.c20.rules.engine.entities.Group;
 import dev.c20.rules.engine.services.entities.BusinessEvalRuleResponse;
 import dev.c20.rules.engine.services.entities.BusinessRuleResponse;
 import dev.c20.rules.engine.services.entities.EvaluateFactResponse;
+import dev.c20.rules.engine.storage.entities.Storage;
 import dev.c20.rules.engine.tools.Eval;
 import dev.c20.rules.engine.tools.EvalResult;
 import dev.c20.workflow.commons.tools.StringUtils;
@@ -27,6 +28,9 @@ public class RuleService {
 
     @Autowired
     ApplicationContext applicationContext;
+
+    @Autowired
+    BusinessStorageService businessStorageService;
 
     HttpServletRequest httpServletRequest;
 
@@ -145,10 +149,12 @@ public class RuleService {
             businessRuleResponse.setFactNotFoundMessage("Not found business rule group " + request.getRuleGroupName());
             return null;
         }
+        StringBuilder mapOfRules = new StringBuilder();
         businessRuleResponse.setRuleGroupFound(true);
-        businessRuleResponse.setRulesComplied(evalBusinessRule(rulesGroup, request.getContext()));
+        businessRuleResponse.setRulesComplied(evalBusinessRule(rulesGroup, request.getContext(),mapOfRules));
         businessRuleResponse.setComplied(businessRuleResponse.getRulesComplied().size() > 0);
         businessRuleResponse.setRuleGroupEvaluated(request.getRuleGroupName());
+        businessRuleResponse.setMapOfRules( mapOfRules.toString() );
 
         if(!businessRuleResponse.isComplied()) {
             businessRuleResponse.setFactNotFoundMessage(stringTemplate(rulesGroup.getFactNotFoundMessage(),request.getContext()));
@@ -157,12 +163,14 @@ public class RuleService {
 
     }
 
-    public List<Rule> evalBusinessRule(Group rulesGroup, Map<String,Object> context) {
+    public List<Rule> evalBusinessRule(Group rulesGroup, Map<String,Object> context,StringBuilder mapOfRules) {
         List<Rule> facts = new ArrayList<>();
         log.info("Eval busines rules group:" + rulesGroup.getName());
         log.info(context.toString());
+        context.put("httpRequest",httpServletRequest);
+
         for( Rule rule : rulesGroup.getRules() ) {
-            String fact = evalRule( facts, rule, context, 0);
+            String fact = evalRule( facts, rule, context, 0,mapOfRules);
             if( fact != null )
                 return facts;
         }
@@ -171,16 +179,20 @@ public class RuleService {
 
         return facts;
     }
-    public String evalRule(List<Rule> facts, Rule rule, Map<String,Object> context, int level) {
+    public String evalRule(List<Rule> facts, Rule rule, Map<String,Object> context, int level, StringBuilder mapOfRules) {
         EvalResult evalResult = Eval.getInstance().run(rule.getExpression(), context, rule.getName() );
         boolean result = (boolean)evalResult.getResult();
-        log.info("Eval expression rule (in level " + level + " ):" + rule.getName() + " => " + rule.getExpression() + " => " + result);
-
+        //log.info("Eval expression rule (in level " + level + " ):" + rule.getName() + " => " + rule.getExpression() + " => " + result);
+        String divisor = level > 1 ? "+" : "";
+        log.info("Eval Rule  " + ( String.join("", Collections.nCopies(level,   "|    " ) )  + "|----"
+                + rule.getName() ) + " => " + ( result ? " Passed" : " x"));
+        mapOfRules.append("Eval Rule  " + ( String.join("", Collections.nCopies(level,   "|    " ) )  + "|----"
+                + rule.getName() ) + " => " + ( result ? " Passed" : " x") + "\n");
         if( rule.getRules() != null && rule.getRules().size() > 0 && result ) {
             for( Rule childRule : rule.getRules()) {
-                String fact = evalRule(facts,childRule,context, level + 1);
+                String fact = evalRule(facts,childRule,context, level + 1, mapOfRules);
                 if( fact != null ) {
-                    log.info("Found Fact: " + fact);
+                    //log.info("Found Fact: " + fact);
                     //facts.add(fact);
                     if( childRule.isExclusive() ) {
                         return fact;
@@ -209,6 +221,26 @@ public class RuleService {
             log.error(ex.getMessage());
             return "error in factNotFoundMessage";
         }
+    }
+
+    public Storage addOrUpdateRule(Rule rule ) {
+
+        return businessStorageService.persistRule(rule);
+    }
+
+    public Storage addOrUpdateFact(Fact fact ) {
+
+        return businessStorageService.persistFact(fact);
+    }
+
+    public Storage addOrUpdateGroup(Group group)  {
+        return businessStorageService.persistGroup(group);
+
+    }
+
+    public Storage addOrUpdateGroupRules(String groupPath, List<String> rules)  {
+        return businessStorageService.setRulesForGroup(groupPath,rules);
+
     }
 
 

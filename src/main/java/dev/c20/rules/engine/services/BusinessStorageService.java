@@ -23,9 +23,6 @@ public class BusinessStorageService {
     @Autowired
     StorageRepository storageRepository;
 
-    @org.springframework.beans.factory.annotation.Value("${business-path}")
-    private String businessPath;
-
     @Autowired
     ValueRepository valueRepository;
 
@@ -53,17 +50,10 @@ public class BusinessStorageService {
         }
 
     }
-    public void createBusinessRulesTree() {
 
-        createTreeFolders( businessPath + "facts/", "System facts for rules");
-        createTreeFolders( businessPath + "rules/", "System rules");
-        createTreeFolders( businessPath + "groups/", "System Business Groups");
-
-
-    }
     public Storage persistFact(Fact fact) {
-        String path = fact.getPath() + fact.getName();
-
+        String path = fact.getPath();
+        fact.setName( PathUtils.getName(path));
         Storage storage = storageRepository.getFile(path);
 
         if( storage == null ) {
@@ -106,7 +96,7 @@ public class BusinessStorageService {
 
         valueRepository.saveAll(values);
 
-        return null;
+        return storage;
     }
 
     public Fact readFactFromStorage(Storage storage) {
@@ -131,8 +121,8 @@ public class BusinessStorageService {
 
     }
 
-    public Fact readFact(String factName, String factCategory){
-        String path = businessPath + "facts/" + ( factCategory != null ? factCategory + "/" : "" )  + factName;
+    public Fact readFact(String factName){
+        String path = factName;
 
         Storage storage = storageRepository.getFile(path);
 
@@ -141,7 +131,7 @@ public class BusinessStorageService {
     }
 
     public Storage persistGroup(Group group) {
-        String path = group.getPath()  + group.getName() + "/";
+        String path = group.getPath() ;
 
 
         Storage storage = storageRepository.getFolder(path);
@@ -153,6 +143,7 @@ public class BusinessStorageService {
         } else {
             log.info("Group found (update):" + path);
         }
+
         storage.setClazzName(group.getClass().getName());
         storage.setDescription(group.getDescription());
         storage.setImage("group");
@@ -171,7 +162,7 @@ public class BusinessStorageService {
         value.setValue(group.getFactNotFoundMessage());
         valueRepository.save(value);
 
-        return null;
+        return storage;
     }
 
     public Group readGroupFromStorage( Storage storage) {
@@ -199,15 +190,15 @@ public class BusinessStorageService {
     }
 
     public Group readGroup(String groupName) {
-        String path = businessPath + "groups/" + groupName + "/";
 
-        Storage storage = storageRepository.getFile(path);
+        Storage storage = storageRepository.getFile(groupName);
 
         return readGroupFromStorage(storage);
     }
 
     public Storage persistRule(Rule rule) {
-        String path = businessPath + "rules/" + rule.getName();
+        String path = rule.getPath();
+        rule.setName( PathUtils.getName(path));
 
 
         Storage storage = storageRepository.getFile(path);
@@ -254,7 +245,7 @@ public class BusinessStorageService {
 
         valueRepository.saveAll(values);
 
-        return null;
+        return storage;
     }
 
     public Rule readRuleFromStorage( Storage storage ) {
@@ -290,18 +281,18 @@ public class BusinessStorageService {
     }
 
     public Rule readRule( String name) {
-        String path = businessPath + "rules/" + name;
+        String path =  name;
 
         Storage storage = storageRepository.getFile(path);
         return readRuleFromStorage(storage);
     }
 
-    public void setRulesForGroup(String groupPath, String... rules) {
+    public Storage setRulesForGroup(String groupPath, List<String> rules) {
 
         Storage storage = storageRepository.getFolder(groupPath);
         if (storage == null) {
             log.error( "Group not exists " + groupPath);
-            return;
+            return null;
         }
         int deletedCount = storageRepository.deleteChilden(
                 new StoragePathUtil(groupPath)
@@ -315,8 +306,11 @@ public class BusinessStorageService {
             log.info( "Adding rule:" + rulePath);
             Storage folder = new Storage();
             folder.setPath(rulePath);
+            folder.setImage("group-rule");
             storageRepository.save(folder);
         }
+
+        return storage;
 
     }
 

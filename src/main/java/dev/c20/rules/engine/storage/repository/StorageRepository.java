@@ -28,6 +28,7 @@ public interface StorageRepository extends JpaRepository<Storage, Long> {
             "            or o.isFolder =  :#{!#path.showFiles} ) " +
             "      and o.level >= :#{#path.level +1} " +
             "      and o.level <= :#{#path.maxLevel +1} " +
+            "      and ( :#{#path.image} is null or o.image = :#{#path.image} )" +
             " order by o.path")
     List<Storage> dir(@Param("path") StoragePathUtil path );
 

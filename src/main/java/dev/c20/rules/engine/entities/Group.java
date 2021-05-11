@@ -24,7 +24,9 @@ public class Group implements Serializable {
     String factNotFound = null;
     String factNotFoundMessage = null;
     String path;
+    @JsonIgnore
     boolean configured = false;
+    @JsonIgnore
     List<Rule> rules = null;
 
 

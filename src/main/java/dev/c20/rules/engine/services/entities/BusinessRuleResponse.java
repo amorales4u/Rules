@@ -14,6 +14,7 @@ public class BusinessRuleResponse {
     private boolean complied;
     private String factNotFoundMessage;
     private String ruleGroupEvaluated;
+    private String mapOfRules;
     private List<Rule> rulesComplied;
 
     public boolean isValid() {

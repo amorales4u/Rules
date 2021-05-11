@@ -34,6 +34,7 @@ public class Rule  implements Serializable {
     @JsonIgnore
     private Rule parentRule;
 
+    @JsonIgnore
     List<Rule> rules = null;
 
     public Rule clean() {

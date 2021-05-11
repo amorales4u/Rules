@@ -1,0 +1,113 @@
+GET http://localhost:8095/rules/version
+
+###
+
+// FACT add or update
+POST http://localhost:8095/rules/fact/update/
+Content-Type: application/json
+
+{
+  "path": "/system/business/facts/ejemplo uno",
+  "description": "",
+  "clazzName": "",
+  "properties": {
+ "uno": "valor de uno" ,
+ "dos": "valor de dos"
+  },
+
+  "parameters": ["uno, dos, ", "tres"]
+}
+
+###
+// FACT add or update
+POST http://localhost:8095/rules/fact/update/
+Content-Type: application/json
+
+{
+  "path": "/system/business/facts/ejemplo uno",
+  "description": "",
+  "clazzName": "",
+  "properties": {
+    "uno": "valor de uno" ,
+    "dos": "valor de dos"
+  },
+
+  "parameters": ["uno, dos, ", "tres"]
+}
+
+###
+
+// RULE add or update
+POST http://localhost:8095/rules/rule/update/
+Content-Type: application/json
+
+{
+  "path": "/system/business/rules/is a rule demo",
+  "description": "demo",
+  "exclusive": true,
+  "condition": ["context.name != null"],
+  "fact": {
+    "name": "/system/business/facts/ejemplo uno" ,
+    "parameters": {
+      "context.param.service": "rest/el/servicio/"
+    }
+  }
+
+}
+
+###
+
+// GROUP add or update
+POST http://localhost:8095/rules/group-rules/update/
+Content-Type: application/json
+
+{
+  "path": "/system/business/groups/is a group demo/",
+  "description": "demo",
+  "factNotFound": "DemoFactNotFound",
+  "factNotFoundMessage": "Group not found"
+
+}
+
+###
+
+// GROUP and rules config
+POST http://localhost:8095/rules/group-rules/update/
+Content-Type: application/json
+
+{
+  "group": "/system/business/groups/is a group demo/",
+  "rules": [
+    "is a rule demo"
+    ]
+
+}
+
+###
+POST http://localhost:8095/rules/evaluate
+Content-Type: application/json
+
+{
+    "ruleGroupName": "Por resolver",
+    "context": {
+        "accept": 1,
+        "email": "email"
+
+    }
+}
+
+###
+
+POST http://localhost:8095/rules/evaluate-and-fire
+Content-Type: application/json
+
+{
+  "ruleGroupName": "Por resolver",
+  "context": {
+    "accept": 3,
+    "email": "email"
+
+  }
+}
+
+###

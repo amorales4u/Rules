@@ -44,7 +44,7 @@ public class Eval {
         groovyCache.setHashSource(hasSourceCode);
         groovyCache.setInstance(groovyObject);
         cache.put(expressionName,groovyCache);
-        log.info("Add cache for [" +expressionName + "] " + hasSourceCode);
+        //log.info("Add cache for [" +expressionName + "] " + hasSourceCode);
         return groovyCache;
     }
 
@@ -58,10 +58,10 @@ public class Eval {
                 groovyObject = groovyCache.getInstance();
 
             } else {
-                log.info("get from cache:"+expressionName + "-" + hasCode);
+                //log.info("get from cache:"+expressionName + "-" + hasCode);
                 GroovyCache groovyCache = cache.get(expressionName);
                 if( groovyCache.getHashSource() != hasCode ) {
-                    log.info("reload cache:"+expressionName + "-" + hasCode);
+                    //log.info("reload cache:"+expressionName + "-" + hasCode);
                     groovyCache = loadToCache( code, expressionName, hasCode);
                 }
                 groovyObject = groovyCache.getInstance();

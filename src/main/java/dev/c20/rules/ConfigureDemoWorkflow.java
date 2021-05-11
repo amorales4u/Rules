@@ -21,6 +21,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -72,27 +73,23 @@ public class ConfigureDemoWorkflow implements CommandLineRunner {
         ObjectMapper objectMapper = new ObjectMapper();
 
         businessStorageService.persistFact(new Fact()
-                .setName("GoToAceptar")
+                .setPath( factsPath + "GoToAceptar")
                 .setDescription("Mueve la tarea a la carpeta de Aceptar")
-                .setPath(factsPath)
                 .setClazzName("dev.c20.rules.engine.demo.facts.GroovyFactService"));
 
         businessStorageService.persistFact( new Fact()
-                        .setName("GoToAceptar")
+                        .setPath(factsPath + "GoToAceptar")
                         .setDescription("Mueve la tarea a la carpeta de Aceptar")
-                        .setPath(factsPath)
                         .setClazzName("dev.c20.rules.engine.demo.facts.GroovyFactService") );
 
         businessStorageService.persistFact( new Fact()
-                .setName("GotoPorAtender")
+                .setPath(factsPath + "GotoPorAtender")
                 .setDescription("Mueve la tarea a la carpeta por atender")
-                .setPath(factsPath)
                 .setClazzName("dev.c20.rules.engine.demo.facts.GroovyFactService") );
 
         businessStorageService.persistFact( new Fact()
-                .setName("SendEmail")
+                .setPath(factsPath + "SendEmail")
                 .setDescription("Manda un correo")
-                .setPath(factsPath)
                 .addParameter("email")
                 .addParameter("to")
                 .addParameter("subject")
@@ -100,9 +97,8 @@ public class ConfigureDemoWorkflow implements CommandLineRunner {
                 .setClazzName("dev.c20.rules.engine.demo.facts.GroovyFactService") );
 
         businessStorageService.persistFact( new Fact()
-                .setName("RestStorage")
+                .setPath(factsPath + "RestStorage")
                 .setDescription("Manda un correo")
-                .setPath(factsPath)
                 .addParameter("[")
                 .addParameter("context: null,")
                 .addParameter("service: null,")
@@ -122,24 +118,21 @@ public class ConfigureDemoWorkflow implements CommandLineRunner {
         );
 
         businessStorageService.persistFact( new Fact()
-                .setName("GotoCancelar")
+                .setPath(factsPath + "GotoCancelar")
                 .setDescription("Manda la tarea a la carpeta de cancelar")
-                .setPath(factsPath)
                 .setClazzName("dev.c20.rules.engine.demo.facts.GroovyFactService") );
 
         businessStorageService.persistFact( new Fact()
-                .setName("NoHayFactPorResolver")
+                .setPath(factsPath + "NoHayFactPorResolver")
                 .setDescription("Regresa un error pues no se resuelve la carpeta")
-                .setPath(factsPath)
                 .setClazzName("dev.c20.rules.engine.demo.facts.GroovyStringFactService") );
 
         businessStorageService.persistGroup(new Group()
-                .setName("Inicio")
-                .setPath(groupsPath)
+                .setPath(groupsPath + "Inicio/")
                 .setFactNotFound("GotoPorAtender"));
 
         businessStorageService.persistGroup(new Group()
-                .setName("Por resolver")
+                .setPath(groupsPath + "Por resolver/")
                 .setDescription("Reglas para Mover una tarea que esta en 'Por Resolver'")
                 .setPath(groupsPath)
                 .setFactNotFound("NoHayFactPorResolver")
@@ -149,19 +142,16 @@ public class ConfigureDemoWorkflow implements CommandLineRunner {
         );
 
         businessStorageService.persistGroup(new Group()
-                .setName("Por cancelar")
-                .setPath(groupsPath)
+                .setPath(groupsPath + "Por cancelar/")
                 .setFactNotFound( "GotoCancelar"));
 
         businessStorageService.persistRule(new Rule()
-                .setName("Enviar tarea a Aceptar")
-                .setPath(rulesPath)
+                .setPath(rulesPath + "Enviar tarea a Aceptar")
                 .setExclusive(false)
                 .addLine("context.accept == 1"));
 
         businessStorageService.persistRule(new Rule()
-                        .setName("Es aceptada y tiene definido un email")
-                        .setPath(rulesPath)
+                        .setPath(rulesPath + "Es aceptada y tiene definido un email")
                         .addLine("context.email != null")
                         .setExclusive(false)
                         .setFact( new MapRuleToFact()
@@ -174,8 +164,7 @@ public class ConfigureDemoWorkflow implements CommandLineRunner {
                         )
                         );
         businessStorageService.persistRule(new Rule()
-                .setName("Es aceptada y NO tiene email")
-                .setPath(rulesPath)
+                .setPath(rulesPath + "Es aceptada y NO tiene email")
                 .addLine("context.email == null")
                 .setExclusive(false)
                 .setFact(new MapRuleToFact()
@@ -186,9 +175,8 @@ public class ConfigureDemoWorkflow implements CommandLineRunner {
         );
 
         businessStorageService.persistRule(new Rule()
-                .setName("Mover tarea a Cancelar")
+                .setPath(rulesPath + "Mover tarea a Cancelar")
                 .addLine("context.accept == 2")
-                .setPath(rulesPath)
                 .setExclusive(false)
                 .setFact(new MapRuleToFact()
                         .name("GoToCancelar")
@@ -198,26 +186,24 @@ public class ConfigureDemoWorkflow implements CommandLineRunner {
 
 
         businessStorageService.persistRule(new Rule()
-                        .setName("Cancela una tarea")
-                        .setPath(rulesPath)
-                        .setExclusive(false)
-                        .addLine("context.accept == 1")
-                        .setFact(new MapRuleToFact()
-                                .name("GoToAceptar")
-                                .addParameter("taskName", "context.taskName")
-                                .addParameter("pathToMove", "context.pathToMove"))
+                .setPath(rulesPath + "Cancela una tarea")
+                .setExclusive(false)
+                .addLine("context.accept == 1")
+                .setFact(new MapRuleToFact()
+                        .name("GoToAceptar")
+                        .addParameter("taskName", "context.taskName")
+                        .addParameter("pathToMove", "context.pathToMove"))
         );
 
 
+        List<String> rules = new ArrayList<>();
+        rules.add("Enviar tarea a Aceptar");
+        rules.add( "Enviar tarea a Aceptar/Es aceptada y tiene definido un email");
+        rules.add("Enviar tarea a Aceptar/Es aceptada y NO tiene email");
+        rules.add("Mover tarea a Cancelar");
+        rules.add("Mover tarea a Cancelar/Cancela una tarea");
         businessStorageService.setRulesForGroup( "/system/business/groups/Por resolver/",
-            "Enviar tarea a Aceptar",
-            "Enviar tarea a Aceptar/Es aceptada y tiene definido un email",
-            "Enviar tarea a Aceptar/Es aceptada y NO tiene email",
-            "Mover tarea a Cancelar",
-            "Mover tarea a Cancelar/Cancela una tarea"
-
-
-        );
+            rules);
 
         List<Storage> dir = storageRepository.dir(
                 new StoragePathUtil("/system/business/groups/Por resolver/")

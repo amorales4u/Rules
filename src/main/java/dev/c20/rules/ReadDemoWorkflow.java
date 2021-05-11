@@ -43,22 +43,15 @@ public class ReadDemoWorkflow implements CommandLineRunner {
                 new StoragePathUtil("/system/business/facts/")
                 .setRecursive(true)
                 .setShowFiles(true)
-                .setShowFolders(false) );
+                .setShowFolders(false)
+                .setImage("fact"));
 
-        storageList.stream()
-                .filter( it -> it.getImage().equals("fact") )
-                .forEach( (it) -> {
-                    Fact fact = businessStorageService.readFactFromStorage(it);
-                    RulesAndFactsRegistered.getInstance().register(fact);
-                    log.info("Setting up Fact:" + fact.getName());
-                }  );
-/*
-        for( Storage storage : storageList ) {
-            Fact fact = businessStorageService.readFactFromStorage(storage);
+        for( Storage it: storageList ) {
+            Fact fact = businessStorageService.readFactFromStorage(it);
             RulesAndFactsRegistered.getInstance().register(fact);
             log.info("Setting up Fact:" + fact.getName());
         }
-*/
+
 
         // read rules for construct group business rule
         log.info("Load RULES");
@@ -66,14 +59,13 @@ public class ReadDemoWorkflow implements CommandLineRunner {
                 new StoragePathUtil("/system/business/rules/")
                         .setRecursive(true)
                         .setShowFiles(true)
-                        .setShowFolders(false) );
-        storageList.stream()
-                .filter( it -> it.getImage().equals("rule") )
-                .forEach( (it) -> {
-                    Rule rule = businessStorageService.readRuleFromStorage(it);
-                    RulesAndFactsRegistered.getInstance().register(rule);
-                    log.warn( "Setting up Rule:" + rule.getName() );
-                });
+                        .setShowFolders(false)
+                        .setImage("rule") );
+        for( Storage it : storageList ) {
+            Rule rule = businessStorageService.readRuleFromStorage(it);
+            RulesAndFactsRegistered.getInstance().register(rule);
+            log.warn( "Setting up Rule:" + rule.getName() );
+        }
 
         // read all groups
         log.info("Load GROUPS of RULES");
@@ -82,16 +74,19 @@ public class ReadDemoWorkflow implements CommandLineRunner {
                         .setRecursive(false)
                         .setShowFiles(false)
                         .setShowFolders(true)
+                        .setImage("group")
         );
+
 
         for( Storage storage : storageList ) {
             Group group = businessStorageService.readGroupFromStorage(storage);
 
             List<Storage> rulesOfGroup = storageRepository.dir(
-                    new StoragePathUtil("/system/business/groups/" + storage.getName() + "/")
+                    new StoragePathUtil(storage.getPath())
                             .setRecursive(true)
                             .setShowFiles(false)
                             .setShowFolders(true)
+                            .setImage("group-rule")
             );
             if( rulesOfGroup.size() == 0 ) {
                 log.warn("Group " + group.getName() + " without configuration");
