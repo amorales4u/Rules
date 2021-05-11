@@ -134,7 +134,6 @@ public class ConfigureDemoWorkflow implements CommandLineRunner {
         businessStorageService.persistGroup(new Group()
                 .setPath(groupsPath + "Por resolver/")
                 .setDescription("Reglas para Mover una tarea que esta en 'Por Resolver'")
-                .setPath(groupsPath)
                 .setFactNotFound("NoHayFactPorResolver")
                 .setFactNotFoundMessage("Para mover la tarea es necesario que aceptada sea 1 o 2, " +
                         " y si desea mandar un email lo tiene que indicar.\n" +
