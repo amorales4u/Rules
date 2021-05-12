@@ -26,6 +26,9 @@ public class BusinessStorageService {
     @Autowired
     ValueRepository valueRepository;
 
+    @Autowired
+    GlobalWordsService globalWordsService;
+
     public void createTreeFolders(String treePath , String description) {
         try {
             String[] paths = PathUtils.splitPath(treePath);
@@ -96,6 +99,8 @@ public class BusinessStorageService {
 
         valueRepository.saveAll(values);
 
+        globalWordsService.saveWords(storage);
+
         return storage;
     }
 
@@ -161,6 +166,8 @@ public class BusinessStorageService {
         value.setName("factNotFoundMessage");
         value.setValue(group.getFactNotFoundMessage());
         valueRepository.save(value);
+
+        globalWordsService.saveWords(storage);
 
         return storage;
     }
@@ -244,6 +251,8 @@ public class BusinessStorageService {
         }
 
         valueRepository.saveAll(values);
+
+        globalWordsService.saveWords(storage);
 
         return storage;
     }
