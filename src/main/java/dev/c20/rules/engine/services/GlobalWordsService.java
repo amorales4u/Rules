@@ -27,6 +27,8 @@ public class GlobalWordsService {
     @Autowired
     WordRepository wordRepository;
 
+
+    //https://stackoverflow.com/questions/62164897/spring-data-jpa-how-to-implement-like-search-with-multiple-values-on-the-same
     public void saveWords(Storage storage ) {
         String[] paths = PathUtils.splitPath(storage.getPath().toLowerCase());
         String allWordsString = "";
