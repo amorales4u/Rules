@@ -10,7 +10,7 @@ import java.util.List;
 @Getter
 @Setter
 public class SearchRequest {
-    int count = 0;
+    Long count = null;
     int page = 1;
     int rowsPerPage = 10;
     String search;

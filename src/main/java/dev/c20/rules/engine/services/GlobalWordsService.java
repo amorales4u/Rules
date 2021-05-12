@@ -48,6 +48,10 @@ public class GlobalWordsService {
         for( String word : findedWords ) {
             log.info(word);
         }
+
+        if( request.getCount() == null ) {
+            request.setCount(globalWordRepository.count());
+        }
         Pageable firstPageWithTwoElements = PageRequest.of(request.getPage() - 1, request.getRowsPerPage());
         request.setResult(globalWordRepository.search( request.getFromPath(), findedWords, firstPageWithTwoElements ));
         return request;
