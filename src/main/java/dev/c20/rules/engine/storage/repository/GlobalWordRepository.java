@@ -2,6 +2,7 @@ package dev.c20.rules.engine.storage.repository;
 
 import dev.c20.rules.engine.storage.entities.GlobalWord;
 import dev.c20.rules.engine.storage.entities.Storage;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -29,6 +30,11 @@ public interface GlobalWordRepository  extends JpaRepository<GlobalWord, String>
             "     ) asG " +
             "order by asG.asCount "
     )
-    public List<Long> search( String key );
+    public List<Long> searchOne( String key );
 
+    @Query( "select o.word from GlobalWord o where o.word like ?1")
+    public List<String> searchLike( String word );
+
+    @Query( "select distinct s from Storage s, Word w where w.parent = s and w.word in ( ?1 )")
+    public List<Storage> search( List<String> words, Pageable pageable);
 }

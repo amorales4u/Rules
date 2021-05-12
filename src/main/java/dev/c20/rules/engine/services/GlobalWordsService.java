@@ -9,7 +9,9 @@ import dev.c20.rules.engine.storage.repository.WordRepository;
 import dev.c20.workflow.commons.tools.PathUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Pageable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +31,27 @@ public class GlobalWordsService {
 
 
     //https://stackoverflow.com/questions/62164897/spring-data-jpa-how-to-implement-like-search-with-multiple-values-on-the-same
+
+    public List<Storage> search( String words ) {
+        words = words.toLowerCase();
+        words = words.replaceAll("'", "");
+        words = words.replaceAll("\"", "");
+        String[] allWords = words.split("\\s+");
+        log.info(words);
+        List<String> findedWords = new ArrayList<>();
+        for( String word : allWords ) {
+            log.info("search for " + "%" + word + "%");
+            findedWords.addAll(  globalWordRepository.searchLike( "%" + word + "%" ) );
+        }
+        for( String word : findedWords ) {
+            log.info(word);
+        }
+        Pageable firstPageWithTwoElements = PageRequest.of(0, 3);
+
+        return globalWordRepository.search( findedWords, firstPageWithTwoElements );
+
+    }
+
     public void saveWords(Storage storage ) {
         String[] paths = PathUtils.splitPath(storage.getPath().toLowerCase());
         String allWordsString = "";

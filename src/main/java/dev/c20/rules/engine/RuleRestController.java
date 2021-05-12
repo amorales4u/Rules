@@ -19,6 +19,9 @@ public class RuleRestController {
 
     @Autowired
     RuleService ruleService;
+    
+    @Autowired
+    GlobalWordsService globalWordsService;
 
     @GetMapping("/version")
     public String version() {
@@ -65,8 +68,13 @@ public class RuleRestController {
                 .addOrUpdateGroupRules(groupPath, rules);
     }
 
+    @PostMapping("/stg/search/")
+    public List<Storage> search(@RequestBody String words, HttpServletRequest httpRequest) {
+        return globalWordsService.search(words);
+    }
 
 
 
 
-}
+
+    }
