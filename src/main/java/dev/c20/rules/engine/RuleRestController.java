@@ -3,11 +3,12 @@ package dev.c20.rules.engine;
 import dev.c20.rules.engine.entities.Fact;
 import dev.c20.rules.engine.entities.Group;
 import dev.c20.rules.engine.entities.Rule;
+import dev.c20.rules.search.SearchService;
 import dev.c20.rules.engine.services.*;
 import dev.c20.rules.engine.services.entities.BusinessEvalRuleResponse;
 import dev.c20.rules.engine.services.entities.BusinessRuleResponse;
 import dev.c20.rules.engine.services.entities.SearchRequest;
-import dev.c20.rules.engine.storage.entities.Storage;
+import dev.c20.rules.storage.entities.Storage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,7 +23,7 @@ public class RuleRestController {
     RuleService ruleService;
     
     @Autowired
-    GlobalWordsService globalWordsService;
+    SearchService searchService;
 
     @GetMapping("/version")
     public String version() {
@@ -71,7 +72,7 @@ public class RuleRestController {
 
     @PostMapping("/stg/search/")
     public SearchRequest search(@RequestBody SearchRequest request, HttpServletRequest httpRequest) {
-        return globalWordsService.search(request);
+        return searchService.search(request);
     }
 
 

@@ -1,5 +1,6 @@
 package dev.c20.rules.engine.services.entities;
 
+import dev.c20.rules.storage.tools.FindedStorage;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;

@@ -1,8 +1,8 @@
-package dev.c20.rules.engine.storage.repository;
+package dev.c20.rules.storage.repository;
 
-import dev.c20.rules.engine.storage.entities.Storage;
-import dev.c20.rules.engine.storage.entities.adds.Data;
-import dev.c20.rules.engine.storage.entities.adds.Word;
+import dev.c20.rules.storage.entities.Storage;
+import dev.c20.rules.storage.entities.adds.Data;
+import dev.c20.rules.storage.entities.adds.Word;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

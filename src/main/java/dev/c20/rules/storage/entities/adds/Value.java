@@ -1,7 +1,7 @@
-package dev.c20.rules.engine.storage.entities.adds;
+package dev.c20.rules.storage.entities.adds;
 
 
-import dev.c20.rules.engine.storage.entities.Storage;
+import dev.c20.rules.storage.entities.Storage;
 
 import javax.persistence.*;
 import java.util.Date;

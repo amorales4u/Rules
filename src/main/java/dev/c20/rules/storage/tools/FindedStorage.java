@@ -1,4 +1,4 @@
-package dev.c20.rules.engine.services.entities;
+package dev.c20.rules.storage.tools;
 
 import lombok.Getter;
 import lombok.Setter;

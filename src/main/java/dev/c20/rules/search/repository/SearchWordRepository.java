@@ -1,8 +1,7 @@
-package dev.c20.rules.engine.storage.repository;
+package dev.c20.rules.search.repository;
 
-import dev.c20.rules.engine.services.entities.FindedStorage;
-import dev.c20.rules.engine.storage.entities.GlobalWord;
-import dev.c20.rules.engine.storage.entities.Storage;
+import dev.c20.rules.storage.tools.FindedStorage;
+import dev.c20.rules.search.entities.GlobalWord;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -11,7 +10,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface GlobalWordRepository  extends JpaRepository<GlobalWord, String> {
+public interface SearchWordRepository extends JpaRepository<GlobalWord, String> {
 
     @Query( "select o from GlobalWord o where o.word = ?1")
     public GlobalWord get( String word );
@@ -37,7 +36,7 @@ public interface GlobalWordRepository  extends JpaRepository<GlobalWord, String>
     public List<String> searchLike( String word );
 
     @Query( "select distinct " +
-            " new dev.c20.rules.engine.services.entities.FindedStorage(s.path,s.name,s.description) " +
+            " new dev.c20.rules.storage.tools.FindedStorage(s.path,s.name,s.description) " +
             "  from Storage s, " +
             "       Word w " +
             " where w.parent = s and "+

@@ -1,13 +1,12 @@
-package dev.c20.rules.engine.services;
+package dev.c20.rules.search;
 
 import dev.c20.rules.engine.services.entities.SearchRequest;
-import dev.c20.rules.engine.storage.entities.GlobalWord;
-import dev.c20.rules.engine.storage.entities.Storage;
-import dev.c20.rules.engine.storage.entities.adds.Word;
-import dev.c20.rules.engine.storage.repository.GlobalWordRepository;
-import dev.c20.rules.engine.storage.repository.StorageRepository;
-import dev.c20.rules.engine.storage.repository.WordRepository;
-import dev.c20.workflow.commons.tools.PathUtils;
+import dev.c20.rules.search.entities.GlobalWord;
+import dev.c20.rules.storage.entities.Storage;
+import dev.c20.rules.storage.entities.adds.Word;
+import dev.c20.rules.search.repository.SearchWordRepository;
+import dev.c20.rules.storage.repository.StorageRepository;
+import dev.c20.rules.storage.repository.WordRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -19,10 +18,10 @@ import java.util.List;
 
 @Slf4j
 @Service
-public class GlobalWordsService {
+public class SearchService {
 
     @Autowired
-    GlobalWordRepository globalWordRepository;
+    SearchWordRepository globalWordRepository;
 
     @Autowired
     StorageRepository storageRepository;

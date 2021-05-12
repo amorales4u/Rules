@@ -4,10 +4,11 @@ import dev.c20.rules.engine.entities.Fact;
 import dev.c20.rules.engine.entities.Group;
 import dev.c20.rules.engine.entities.MapRuleToFact;
 import dev.c20.rules.engine.entities.Rule;
-import dev.c20.rules.engine.storage.entities.Storage;
-import dev.c20.rules.engine.storage.entities.adds.Value;
-import dev.c20.rules.engine.storage.repository.StorageRepository;
-import dev.c20.rules.engine.storage.repository.ValueRepository;
+import dev.c20.rules.search.SearchService;
+import dev.c20.rules.storage.entities.Storage;
+import dev.c20.rules.storage.entities.adds.Value;
+import dev.c20.rules.storage.repository.StorageRepository;
+import dev.c20.rules.storage.repository.ValueRepository;
 import dev.c20.workflow.commons.tools.PathUtils;
 import dev.c20.workflow.commons.tools.StoragePathUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +28,7 @@ public class BusinessStorageService {
     ValueRepository valueRepository;
 
     @Autowired
-    GlobalWordsService globalWordsService;
+    SearchService searchService;
 
     public void createTreeFolders(String treePath , String description) {
         try {
@@ -99,7 +100,7 @@ public class BusinessStorageService {
 
         valueRepository.saveAll(values);
 
-        globalWordsService.index(storage);
+        searchService.index(storage);
 
         return storage;
     }
@@ -167,7 +168,7 @@ public class BusinessStorageService {
         value.setValue(group.getFactNotFoundMessage());
         valueRepository.save(value);
 
-        globalWordsService.index(storage);
+        searchService.index(storage);
 
         return storage;
     }
@@ -252,7 +253,7 @@ public class BusinessStorageService {
 
         valueRepository.saveAll(values);
 
-        globalWordsService.index(storage);
+        searchService.index(storage);
 
         return storage;
     }

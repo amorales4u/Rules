@@ -7,7 +7,7 @@ import dev.c20.rules.engine.entities.Group;
 import dev.c20.rules.engine.services.entities.BusinessEvalRuleResponse;
 import dev.c20.rules.engine.services.entities.BusinessRuleResponse;
 import dev.c20.rules.engine.services.entities.EvaluateFactResponse;
-import dev.c20.rules.engine.storage.entities.Storage;
+import dev.c20.rules.storage.entities.Storage;
 import dev.c20.rules.engine.tools.Eval;
 import dev.c20.rules.engine.tools.EvalResult;
 import dev.c20.workflow.commons.tools.StringUtils;

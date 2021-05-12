@@ -1,4 +1,4 @@
-package dev.c20.rules.engine.storage.entities;
+package dev.c20.rules.storage.entities;
 
 
 import dev.c20.workflow.commons.tools.PathUtils;

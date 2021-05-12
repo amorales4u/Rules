@@ -1,4 +1,4 @@
-package dev.c20.rules.engine.storage.entities;
+package dev.c20.rules.search.entities;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -15,7 +15,7 @@ import java.io.Serializable;
 public class GlobalWord implements Serializable {
 
     @Id
-    @Column(name="C20_WORD")
+    @Column(name="C20_WORD", length = 60)
     private String word;
 
 }

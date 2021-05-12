@@ -1,6 +1,6 @@
-package dev.c20.rules.engine.storage.entities.adds;
+package dev.c20.rules.storage.entities.adds;
 
-import dev.c20.rules.engine.storage.entities.Storage;
+import dev.c20.rules.storage.entities.Storage;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
