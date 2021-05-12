@@ -52,7 +52,7 @@ public class GlobalWordsService {
 
     }
 
-    public void saveWords(Storage storage ) {
+    public void index(Storage storage ) {
         String[] paths = PathUtils.splitPath(storage.getPath().toLowerCase());
         String allWordsString = "";
         for( String word : paths ) {
@@ -81,12 +81,12 @@ public class GlobalWordsService {
             }
         }
 
-        saveWords(allWords);
+        index(allWords);
         wordRepository.saveAll(wordsToSave);
 
     }
 
-    public void saveWords( String[] words ) {
+    public void index( String[] words ) {
         List<GlobalWord> wordsToSave = new ArrayList<>();
 
         for( String word : words ) {

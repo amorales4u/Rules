@@ -99,7 +99,7 @@ public class BusinessStorageService {
 
         valueRepository.saveAll(values);
 
-        globalWordsService.saveWords(storage);
+        globalWordsService.index(storage);
 
         return storage;
     }
@@ -167,7 +167,7 @@ public class BusinessStorageService {
         value.setValue(group.getFactNotFoundMessage());
         valueRepository.save(value);
 
-        globalWordsService.saveWords(storage);
+        globalWordsService.index(storage);
 
         return storage;
     }
@@ -252,7 +252,7 @@ public class BusinessStorageService {
 
         valueRepository.saveAll(values);
 
-        globalWordsService.saveWords(storage);
+        globalWordsService.index(storage);
 
         return storage;
     }
