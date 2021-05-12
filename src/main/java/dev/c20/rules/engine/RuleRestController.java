@@ -6,6 +6,7 @@ import dev.c20.rules.engine.entities.Rule;
 import dev.c20.rules.engine.services.*;
 import dev.c20.rules.engine.services.entities.BusinessEvalRuleResponse;
 import dev.c20.rules.engine.services.entities.BusinessRuleResponse;
+import dev.c20.rules.engine.services.entities.SearchRequest;
 import dev.c20.rules.engine.storage.entities.Storage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -69,8 +70,8 @@ public class RuleRestController {
     }
 
     @PostMapping("/stg/search/")
-    public List<Storage> search(@RequestBody String words, HttpServletRequest httpRequest) {
-        return globalWordsService.search(words);
+    public SearchRequest search(@RequestBody SearchRequest request, HttpServletRequest httpRequest) {
+        return globalWordsService.search(request);
     }
 
 

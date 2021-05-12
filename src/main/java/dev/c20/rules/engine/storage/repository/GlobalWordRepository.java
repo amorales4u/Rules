@@ -1,5 +1,6 @@
 package dev.c20.rules.engine.storage.repository;
 
+import dev.c20.rules.engine.services.entities.FindedStorage;
 import dev.c20.rules.engine.storage.entities.GlobalWord;
 import dev.c20.rules.engine.storage.entities.Storage;
 import org.springframework.data.domain.Pageable;
@@ -35,6 +36,13 @@ public interface GlobalWordRepository  extends JpaRepository<GlobalWord, String>
     @Query( "select o.word from GlobalWord o where o.word like ?1")
     public List<String> searchLike( String word );
 
-    @Query( "select distinct s from Storage s, Word w where w.parent = s and w.word in ( ?1 )")
-    public List<Storage> search( List<String> words, Pageable pageable);
+    @Query( "select distinct " +
+            " new dev.c20.rules.engine.services.entities.FindedStorage(s.path,s.name,s.description) " +
+            "  from Storage s, " +
+            "       Word w " +
+            " where w.parent = s and "+
+            "       s.path like ?1 and " +
+            "       w.word in ( ?2 )"
+    )
+    public List<FindedStorage> search(String fromPath, List<String> words, Pageable pageable);
 }

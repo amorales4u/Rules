@@ -1,5 +1,6 @@
 package dev.c20.rules.engine.services;
 
+import dev.c20.rules.engine.services.entities.SearchRequest;
 import dev.c20.rules.engine.storage.entities.GlobalWord;
 import dev.c20.rules.engine.storage.entities.Storage;
 import dev.c20.rules.engine.storage.entities.adds.Word;
@@ -32,7 +33,8 @@ public class GlobalWordsService {
 
     //https://stackoverflow.com/questions/62164897/spring-data-jpa-how-to-implement-like-search-with-multiple-values-on-the-same
 
-    public List<Storage> search( String words ) {
+    public SearchRequest search( SearchRequest request ) {
+        String words = request.getSearch();
         words = words.toLowerCase();
         words = words.replaceAll("'", "");
         words = words.replaceAll("\"", "");
@@ -46,27 +48,47 @@ public class GlobalWordsService {
         for( String word : findedWords ) {
             log.info(word);
         }
-        Pageable firstPageWithTwoElements = PageRequest.of(0, 3);
-
-        return globalWordRepository.search( findedWords, firstPageWithTwoElements );
+        Pageable firstPageWithTwoElements = PageRequest.of(request.getPage() - 1, request.getRowsPerPage());
+        request.setResult(globalWordRepository.search( request.getFromPath(), findedWords, firstPageWithTwoElements ));
+        return request;
 
     }
 
     public void index(Storage storage ) {
-        String[] paths = PathUtils.splitPath(storage.getPath().toLowerCase());
         String allWordsString = "";
+        /*
+        String[] paths = PathUtils.splitPath(storage.getPath().toLowerCase());
         for( String word : paths ) {
             String words[] = word.split("\\s+");
             for( String w : words )
                 allWordsString += " " + w;
         }
+
+         */
+        allWordsString = storage.getPath().replaceAll("\\/", " ");
         if( storage.getDescription() != null ) {
             allWordsString += " " + storage.getDescription();
         }
+
+        if( storage.getClazzName() != null ) {
+            allWordsString += " " + storage.getClazzName().replaceAll("\\.", " ");
+        }
+
+        if( storage.getImage() != null ) {
+            allWordsString += " " + storage.getImage().replaceAll("\\.", " ");
+        }
+
+
         allWordsString = allWordsString.toLowerCase();
         allWordsString = allWordsString.replaceAll("'", "");
+        allWordsString = allWordsString.replaceAll("á", "a");
+        allWordsString = allWordsString.replaceAll("é", "e");
+        allWordsString = allWordsString.replaceAll("í", "i");
+        allWordsString = allWordsString.replaceAll("ó", "o");
+        allWordsString = allWordsString.replaceAll("ú", "u");
         String[] allWords = allWordsString.split("\\s+");
 
+        log.info("Index:" + allWordsString);
         wordRepository.deleteAll(storage);
 
         List<Word> wordsToSave = new ArrayList<>();

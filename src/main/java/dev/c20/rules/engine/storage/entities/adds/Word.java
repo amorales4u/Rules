@@ -24,7 +24,7 @@ public class Word implements Serializable {
     @JoinColumn( name="C20_STORAGE")
     private Storage parent;
 
-    @Column(name="C20_WORD", length = 20)
+    @Column(name="C20_WORD", length = 60)
     private String word;
 
 }

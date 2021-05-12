@@ -115,6 +115,11 @@ Content-Type: application/json
 POST http://localhost:8095/rules/stg/search/
 Content-Type: application/json
 
-"arp sys"
+{
+  "fromPath": "/system/business/rules/%",
+  "search": "email",
+  "page": 1,
+  "rowsPerPage":  3
+}
 
 ###
