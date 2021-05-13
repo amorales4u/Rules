@@ -1,4 +1,4 @@
-package dev.c20.rules.search;
+package dev.c20.rules.search.services;
 
 import dev.c20.rules.engine.services.entities.SearchRequest;
 import dev.c20.rules.search.entities.GlobalWord;
@@ -33,27 +33,35 @@ public class SearchService {
     //https://stackoverflow.com/questions/62164897/spring-data-jpa-how-to-implement-like-search-with-multiple-values-on-the-same
 
     public SearchRequest search( SearchRequest request ) {
-        String words = request.getSearch();
+
+        Pageable firstPageWithTwoElements = PageRequest.of(request.getPage() - 1, request.getRowsPerPage());
+        request.setResult(globalWordRepository.search( request.getFromPath(), prepareFindedWords(request.getSearch()), firstPageWithTwoElements ));
+        return request;
+
+    }
+
+    public SearchRequest searchIds( SearchRequest request ) {
+
+        Pageable firstPageWithTwoElements = PageRequest.of(request.getPage() - 1, request.getRowsPerPage());
+        request.setIds(globalWordRepository.searchIds( request.getFromPath(), prepareFindedWords(request.getSearch()), firstPageWithTwoElements ));
+        return request;
+
+    }
+
+    private List<String> prepareFindedWords(String words ) {
         words = words.toLowerCase();
         words = words.replaceAll("'", "");
         words = words.replaceAll("\"", "");
+
         String[] allWords = words.split("\\s+");
-        log.info(words);
+
         List<String> findedWords = new ArrayList<>();
+
         for( String word : allWords ) {
-            log.info("search for " + "%" + word + "%");
             findedWords.addAll(  globalWordRepository.searchLike( "%" + word + "%" ) );
         }
-        for( String word : findedWords ) {
-            log.info(word);
-        }
 
-        if( request.getCount() == null ) {
-            request.setCount(globalWordRepository.count());
-        }
-        Pageable firstPageWithTwoElements = PageRequest.of(request.getPage() - 1, request.getRowsPerPage());
-        request.setResult(globalWordRepository.search( request.getFromPath(), findedWords, firstPageWithTwoElements ));
-        return request;
+        return findedWords;
 
     }
 

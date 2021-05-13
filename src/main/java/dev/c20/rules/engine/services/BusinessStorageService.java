@@ -4,7 +4,7 @@ import dev.c20.rules.engine.entities.Fact;
 import dev.c20.rules.engine.entities.Group;
 import dev.c20.rules.engine.entities.MapRuleToFact;
 import dev.c20.rules.engine.entities.Rule;
-import dev.c20.rules.search.SearchService;
+import dev.c20.rules.search.services.SearchService;
 import dev.c20.rules.storage.entities.Storage;
 import dev.c20.rules.storage.entities.adds.Value;
 import dev.c20.rules.storage.repository.StorageRepository;

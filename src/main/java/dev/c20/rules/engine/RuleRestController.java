@@ -3,7 +3,7 @@ package dev.c20.rules.engine;
 import dev.c20.rules.engine.entities.Fact;
 import dev.c20.rules.engine.entities.Group;
 import dev.c20.rules.engine.entities.Rule;
-import dev.c20.rules.search.SearchService;
+import dev.c20.rules.search.services.SearchService;
 import dev.c20.rules.engine.services.*;
 import dev.c20.rules.engine.services.entities.BusinessEvalRuleResponse;
 import dev.c20.rules.engine.services.entities.BusinessRuleResponse;
@@ -75,8 +75,13 @@ public class RuleRestController {
         return searchService.search(request);
     }
 
-
-
-
-
+    @PostMapping("/stg/search-ids/")
+    public SearchRequest searchIds(@RequestBody SearchRequest request, HttpServletRequest httpRequest) {
+        return searchService.searchIds(request);
     }
+
+
+
+
+
+}

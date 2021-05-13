@@ -44,4 +44,17 @@ public interface SearchWordRepository extends JpaRepository<GlobalWord, String> 
             "       w.word in ( ?2 )"
     )
     public List<FindedStorage> search(String fromPath, List<String> words, Pageable pageable);
+
+    @Query( "select distinct " +
+            " s.id " +
+            "  from Storage s, " +
+            "       Word w " +
+            " where w.parent = s and "+
+            "       s.path like ?1 and " +
+            "       w.word in ( ?2 )"
+    )
+    public List<Long> searchIds(String fromPath, List<String> words, Pageable pageable);
+
+
+
 }
