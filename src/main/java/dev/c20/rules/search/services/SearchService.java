@@ -9,15 +9,17 @@ import dev.c20.rules.search.repository.SearchWordRepository;
 import dev.c20.rules.storage.repository.DataRepository;
 import dev.c20.rules.storage.repository.StorageRepository;
 import dev.c20.rules.storage.repository.WordRepository;
+import dev.c20.rules.storage.tools.FindedStorage;
 import dev.c20.workflow.commons.tools.StoragePathUtil;
+import dev.c20.workflow.commons.tools.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Pageable;
 
-import java.util.ArrayList;
-import java.util.List;
+import javax.persistence.EntityManager;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -35,24 +37,77 @@ public class SearchService {
     @Autowired
     WordRepository wordRepository;
 
+    @Autowired
+    EntityManager entityManager;
 
     //https://stackoverflow.com/questions/62164897/spring-data-jpa-how-to-implement-like-search-with-multiple-values-on-the-same
 
     public SearchRequest search( SearchRequest request ) {
 
-        Pageable firstPageWithTwoElements = PageRequest.of(request.getPage() - 1, request.getRowsPerPage());
-        request.setResult(searchRepository.search( request.getFromPath(), prepareFindedWords(request.getSearch()), firstPageWithTwoElements ));
+        Pageable page = PageRequest.of(request.getPage() - 1, request.getRowsPerPage());
+        List<String> words = prepareWordsToSearch(request.getSearch());
+        List<String> wordsToSearch = prepareFindedWords(words);
+        List<Long> ids = searchAllIds( request.getFromPath(), wordsToSearch, words.size(),page);
+        List<FindedStorage> result = searchRepository.search( ids );
+        request.setResult(result);
+        request.setCount(new Long(result.size()));
         return request;
 
     }
 
     public SearchRequest searchIds( SearchRequest request ) {
 
-        Pageable firstPageWithTwoElements = PageRequest.of(request.getPage() - 1, request.getRowsPerPage());
-        List<String> words = prepareFindedWords(request.getSearch());
-        request.setIds(searchRepository.searchIds( request.getFromPath(), words, firstPageWithTwoElements ));
+        Pageable page = PageRequest.of(request.getPage() - 1, request.getRowsPerPage());
+        List<String> words = prepareWordsToSearch(request.getSearch());
+        List<String> wordsToSearch = prepareFindedWords(words);
+        List<Long> ids = searchAllIds( request.getFromPath(), wordsToSearch, words.size(), page);
+        request.setIds(ids);
+        request.setCount(new Long(ids.size()));
         return request;
 
+    }
+
+    public static String collectionAsString(Collection<?> collection, String separator) {
+        StringBuffer string = new StringBuffer(128);
+        Iterator it = collection.iterator();
+
+        while(it.hasNext()) {
+            string.append("'")
+                .append( it.next())
+                .append("' ");
+            if (it.hasNext()) {
+                string.append(separator);
+            }
+        }
+
+        return string.toString();
+    }
+
+    public List<Long> searchAllIds( String fromPath, List<String> wordsToSearch, int wordCount, Pageable page) {
+        StringBuffer hql = new StringBuffer(128);
+
+        hql
+                .append( "select distinct \n" )
+                .append( " s.id \n" )
+                .append( "  from Storage s \n" )
+                .append( " where s.path like ?1 \n")
+                .append( " and ( select count(w) from Word w \n")
+                .append( " where w.parent = s  \n")
+                .append( "   and s.path like ?1  \n" )
+                .append( "  and  w.word in ( " + collectionAsString(wordsToSearch, ",") + " ) \n")
+                .append(" ) >= ?2")
+        ;
+
+        log.info(hql.toString());
+        log.info("from:" + page.getPageNumber() * page.getPageSize());
+        List<Long> ids = entityManager.createQuery(hql.toString())
+                .setParameter(1,fromPath)
+                .setParameter(2,new Long(wordCount))
+                .setFirstResult( page.getPageNumber() * page.getPageSize() )
+                .setMaxResults(page.getPageSize())
+                .getResultList();
+
+        return ids;
     }
 
     public SearchRequest searchIndex( SearchRequest request ) {
@@ -87,21 +142,24 @@ public class SearchService {
         return request;
 
     }
-
-    private List<String> prepareFindedWords(String words ) {
+    private List<String> prepareWordsToSearch(String words ) {
         words = words.toLowerCase();
         words = words.replaceAll("'", "");
         words = words.replaceAll("\"", "");
 
         String[] allWords = words.split("\\s+");
+        return Arrays.asList(allWords);
+    }
 
-        List<String> findedWords = new ArrayList<>();
+    private List<String> prepareFindedWords(List<String> wordsToSearch ) {
 
-        for( String word : allWords ) {
-            findedWords.addAll(  searchRepository.searchLike( "%" + word + "%" ) );
+        List<String> all = new ArrayList<>();
+        for( String word : wordsToSearch ) {
+            all.add(word);
+            all.addAll(searchRepository.searchLike( "%" + word + "%" ));
         }
 
-        return findedWords;
+        return all;
 
     }
 

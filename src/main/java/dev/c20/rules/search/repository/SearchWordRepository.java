@@ -37,13 +37,10 @@ public interface SearchWordRepository extends JpaRepository<GlobalWord, String> 
 
     @Query( "select distinct " +
             " new dev.c20.rules.storage.tools.FindedStorage(s.path,s.name,s.description) " +
-            "  from Storage s, " +
-            "       Word w " +
-            " where w.parent = s and "+
-            "       s.path like ?1 and " +
-            "       w.word in ( ?2 ) "
+            "  from Storage s " +
+            " where s.id in ( ?1 ) "
     )
-    public List<FindedStorage> search(String fromPath, List<String> words, Pageable pageable);
+    public List<FindedStorage> search(List<Long> ids);
 
     @Query( "select distinct" +
             " s.id " +
