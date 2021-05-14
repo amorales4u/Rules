@@ -3,7 +3,6 @@ package dev.c20.rules.search.services;
 import dev.c20.rules.search.requestresponses.SearchRequest;
 import dev.c20.rules.search.entities.GlobalWord;
 import dev.c20.rules.storage.entities.Storage;
-import dev.c20.rules.storage.entities.adds.Data;
 import dev.c20.rules.storage.entities.adds.Word;
 import dev.c20.rules.search.repository.SearchWordRepository;
 import dev.c20.rules.storage.repository.DataRepository;
@@ -11,7 +10,6 @@ import dev.c20.rules.storage.repository.StorageRepository;
 import dev.c20.rules.storage.repository.WordRepository;
 import dev.c20.rules.storage.tools.FindedStorage;
 import dev.c20.workflow.commons.tools.StoragePathUtil;
-import dev.c20.workflow.commons.tools.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -46,8 +44,9 @@ public class SearchService {
 
         Pageable page = PageRequest.of(request.getPage() - 1, request.getRowsPerPage());
         List<String> words = prepareWordsToSearch(request.getSearch());
-        List<String> wordsToSearch = prepareFindedWords(words);
-        List<Long> ids = searchAllIds( request.getFromPath(), wordsToSearch, words.size(),page);
+        List<String> wordsToSearch = findInDictionay(words);
+        //List<Long> ids = searchAllIdsUsingDictionary( request.getFromPath(), wordsToSearch, words.size(),page);
+        List<Long> ids = searchAllIdsDirectly( request.getFromPath(), words, words.size(),page);
         List<FindedStorage> result = searchRepository.search( ids );
         request.setResult(result);
         request.setCount(new Long(result.size()));
@@ -59,8 +58,9 @@ public class SearchService {
 
         Pageable page = PageRequest.of(request.getPage() - 1, request.getRowsPerPage());
         List<String> words = prepareWordsToSearch(request.getSearch());
-        List<String> wordsToSearch = prepareFindedWords(words);
-        List<Long> ids = searchAllIds( request.getFromPath(), wordsToSearch, words.size(), page);
+        List<String> wordsToSearch = findInDictionay(words);
+        //List<Long> ids = searchAllIdsUsingDictionary( request.getFromPath(), wordsToSearch, words.size(), page);
+        List<Long> ids = searchAllIdsDirectly( request.getFromPath(), words, words.size(), page);
         request.setIds(ids);
         request.setCount(new Long(ids.size()));
         return request;
@@ -82,8 +82,42 @@ public class SearchService {
 
         return string.toString();
     }
+    public List<Long> searchAllIdsDirectly(String fromPath, List<String> wordsToSearch, int wordCount, Pageable page) {
+        StringBuffer hql = new StringBuffer(128);
+        hql
+                .append( "select distinct \n" )
+                .append( " s.id \n" )
+                .append( "  from Storage s \n" )
+                .append( " where s.path like ?1 \n")
+                .append( " and ( select count(w) from Word w \n")
+                .append( " where w.parent = s  \n")
+                .append( "  and (  \n")
+        ;
 
-    public List<Long> searchAllIds( String fromPath, List<String> wordsToSearch, int wordCount, Pageable page) {
+        
+        for( int i = 0; i < wordsToSearch.size(); i++ ) {
+            String word = wordsToSearch.get(i);
+            hql.append( " w.word like '%" + word + "%' \n" );
+            if( i < wordsToSearch.size() - 1) {
+                hql.append( " or ");
+            }
+        }
+        hql.append( " )  \n")
+                .append( " ) >= ?2");
+
+        log.info(hql.toString());
+        log.info("from:" + page.getPageNumber() * page.getPageSize());
+        List<Long> ids = entityManager.createQuery(hql.toString())
+                .setParameter(1,fromPath)
+                .setParameter(2,new Long(wordCount))
+                .setFirstResult( page.getPageNumber() * page.getPageSize() )
+                .setMaxResults(page.getPageSize())
+                .getResultList();
+
+        return ids;
+    }
+
+    public List<Long> searchAllIdsUsingDictionary(String fromPath, List<String> wordsToSearch, int wordCount, Pageable page) {
         StringBuffer hql = new StringBuffer(128);
 
         hql
@@ -93,7 +127,6 @@ public class SearchService {
                 .append( " where s.path like ?1 \n")
                 .append( " and ( select count(w) from Word w \n")
                 .append( " where w.parent = s  \n")
-                .append( "   and s.path like ?1  \n" )
                 .append( "  and  w.word in ( " + collectionAsString(wordsToSearch, ",") + " ) \n")
                 .append(" ) >= ?2")
         ;
@@ -151,7 +184,7 @@ public class SearchService {
         return Arrays.asList(allWords);
     }
 
-    private List<String> prepareFindedWords(List<String> wordsToSearch ) {
+    private List<String> findInDictionay(List<String> wordsToSearch ) {
 
         List<String> all = new ArrayList<>();
         for( String word : wordsToSearch ) {

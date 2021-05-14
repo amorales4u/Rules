@@ -129,7 +129,7 @@ Content-Type: application/json
 
 {
   "fromPath": "/system/business/rules/%",
-  "search": "email no",
+  "search": "email",
   "page": 1,
   "rowsPerPage":  3
 }
