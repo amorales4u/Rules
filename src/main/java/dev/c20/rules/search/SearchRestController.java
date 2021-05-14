@@ -1,17 +1,15 @@
 package dev.c20.rules.search;
 
 import dev.c20.rules.engine.services.RuleService;
-import dev.c20.rules.engine.services.entities.SearchRequest;
+import dev.c20.rules.search.requestresponses.SearchRequest;
 import dev.c20.rules.search.services.SearchService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 
 @RestController
+@RequestMapping( path = "/storage")
 public class SearchRestController {
 
     @Autowired
@@ -25,14 +23,24 @@ public class SearchRestController {
         return "2021-04-13 18:50";
     }
 
-    @PostMapping("/stg/search/")
+    @PostMapping("/search/")
     public SearchRequest search(@RequestBody SearchRequest request, HttpServletRequest httpRequest) {
         return searchService.search(request);
     }
 
-    @PostMapping("/stg/search-ids/")
+    @PostMapping("/search-ids/")
     public SearchRequest searchIds(@RequestBody SearchRequest request, HttpServletRequest httpRequest) {
         return searchService.searchIds(request);
+    }
+
+    @PostMapping("/search-index/")
+    public SearchRequest searchIndex(@RequestBody SearchRequest request, HttpServletRequest httpRequest) {
+        return searchService.searchIndex(request);
+    }
+
+    @PostMapping("/search-index-data/")
+    public SearchRequest searchIndexWithData(@RequestBody SearchRequest request, HttpServletRequest httpRequest) {
+        return searchService.searchIndexWithData(request);
     }
 
 

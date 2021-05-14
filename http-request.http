@@ -105,26 +105,26 @@ Content-Type: application/json
   "ruleGroupName": "Por resolver",
   "context": {
     "accept": 3,
-    "email": "email"
+    "email": "email no"
 
   }
 }
 
 ###
 
-POST http://localhost:8095/rules/stg/search/
+POST http://localhost:8095/rules/storage/search/
 Content-Type: application/json
 
 {
   "fromPath": "/system/business/rules/%",
-  "search": "email",
+  "search": "email no",
   "page": 1,
   "rowsPerPage":  3
 }
 
 ###
 
-POST http://localhost:8095/rules/stg/search-ids/
+POST http://localhost:8095/rules/storage/search-ids/
 Content-Type: application/json
 
 {

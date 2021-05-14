@@ -7,7 +7,7 @@ import dev.c20.rules.search.services.SearchService;
 import dev.c20.rules.engine.services.*;
 import dev.c20.rules.engine.services.entities.BusinessEvalRuleResponse;
 import dev.c20.rules.engine.services.entities.BusinessRuleResponse;
-import dev.c20.rules.engine.services.entities.SearchRequest;
+import dev.c20.rules.search.requestresponses.SearchRequest;
 import dev.c20.rules.storage.entities.Storage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
+@RequestMapping( path = "/rules")
 public class RuleRestController {
 
     @Autowired

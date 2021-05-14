@@ -1,12 +1,15 @@
 package dev.c20.rules.search.services;
 
-import dev.c20.rules.engine.services.entities.SearchRequest;
+import dev.c20.rules.search.requestresponses.SearchRequest;
 import dev.c20.rules.search.entities.GlobalWord;
 import dev.c20.rules.storage.entities.Storage;
+import dev.c20.rules.storage.entities.adds.Data;
 import dev.c20.rules.storage.entities.adds.Word;
 import dev.c20.rules.search.repository.SearchWordRepository;
+import dev.c20.rules.storage.repository.DataRepository;
 import dev.c20.rules.storage.repository.StorageRepository;
 import dev.c20.rules.storage.repository.WordRepository;
+import dev.c20.workflow.commons.tools.StoragePathUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -21,10 +24,13 @@ import java.util.List;
 public class SearchService {
 
     @Autowired
-    SearchWordRepository globalWordRepository;
+    SearchWordRepository searchRepository;
 
     @Autowired
     StorageRepository storageRepository;
+
+    @Autowired
+    DataRepository dataRepository;
 
     @Autowired
     WordRepository wordRepository;
@@ -35,7 +41,7 @@ public class SearchService {
     public SearchRequest search( SearchRequest request ) {
 
         Pageable firstPageWithTwoElements = PageRequest.of(request.getPage() - 1, request.getRowsPerPage());
-        request.setResult(globalWordRepository.search( request.getFromPath(), prepareFindedWords(request.getSearch()), firstPageWithTwoElements ));
+        request.setResult(searchRepository.search( request.getFromPath(), prepareFindedWords(request.getSearch()), firstPageWithTwoElements ));
         return request;
 
     }
@@ -43,7 +49,41 @@ public class SearchService {
     public SearchRequest searchIds( SearchRequest request ) {
 
         Pageable firstPageWithTwoElements = PageRequest.of(request.getPage() - 1, request.getRowsPerPage());
-        request.setIds(globalWordRepository.searchIds( request.getFromPath(), prepareFindedWords(request.getSearch()), firstPageWithTwoElements ));
+        List<String> words = prepareFindedWords(request.getSearch());
+        request.setIds(searchRepository.searchIds( request.getFromPath(), words, firstPageWithTwoElements ));
+        return request;
+
+    }
+
+    public SearchRequest searchIndex( SearchRequest request ) {
+
+        List<Storage> storageList = storageRepository.dir(
+                new StoragePathUtil(request.getFromPath())
+                        .setRecursive(true)
+                        .setShowFiles(true)
+                        .setShowFolders(true));
+
+        for( Storage storage : storageList ) {
+            index(storage);
+        }
+
+        return request;
+
+    }
+
+    public SearchRequest searchIndexWithData( SearchRequest request ) {
+
+        List<Storage> storageList = storageRepository.dir(
+                new StoragePathUtil(request.getFromPath())
+                        .setRecursive(true)
+                        .setShowFiles(true)
+                        .setShowFolders(true));
+
+        for( Storage storage : storageList ) {
+            index(storage);
+            String data = dataRepository.getDataOf(storage.getPath());
+        }
+
         return request;
 
     }
@@ -58,7 +98,7 @@ public class SearchService {
         List<String> findedWords = new ArrayList<>();
 
         for( String word : allWords ) {
-            findedWords.addAll(  globalWordRepository.searchLike( "%" + word + "%" ) );
+            findedWords.addAll(  searchRepository.searchLike( "%" + word + "%" ) );
         }
 
         return findedWords;
@@ -124,7 +164,7 @@ public class SearchService {
 
         for( String word : words ) {
             if( !word.isEmpty() ) {
-                GlobalWord globalWord = globalWordRepository.get(word);
+                GlobalWord globalWord = searchRepository.get(word);
                 if (globalWord == null) {
                     globalWord = new GlobalWord();
                     globalWord.setWord(word);
@@ -133,7 +173,7 @@ public class SearchService {
             }
         }
 
-        globalWordRepository.saveAll(wordsToSave);
+        searchRepository.saveAll(wordsToSave);
 
     }
 }

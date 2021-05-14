@@ -1,4 +1,4 @@
-package dev.c20.rules.engine.services.entities;
+package dev.c20.rules.search.requestresponses;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import dev.c20.rules.storage.tools.FindedStorage;
