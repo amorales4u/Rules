@@ -11,6 +11,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
@@ -50,6 +53,9 @@ public class ConfigureDemoWorkflow implements CommandLineRunner {
     @Autowired
     private BusinessStorageService businessStorageService;
 
+    @Autowired
+    private ServletWebServerApplicationContext server;
+
     @Override
     public void run(String... args) throws Exception {
 
@@ -59,6 +65,7 @@ public class ConfigureDemoWorkflow implements CommandLineRunner {
 
         log.info("Configure DEMO Business Rules, Rules, Groups and Facts");
         log.info(businessPath);
+        log.warn("Server port:" + server.getWebServer().getPort()+"");
 
         log.info("Creating business tree for persist");
         log.info("/system/business/facts/");
